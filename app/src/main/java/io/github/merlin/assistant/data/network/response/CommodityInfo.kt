@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Goods(
+data class CommodityInfo(
     @SerialName("default_num")
     val defaultNum: Int,
     @SerialName("front_need")

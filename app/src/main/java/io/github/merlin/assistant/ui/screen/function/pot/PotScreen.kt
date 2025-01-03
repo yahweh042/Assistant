@@ -9,19 +9,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -31,6 +32,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -48,6 +52,7 @@ import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.ui.base.AssistantDialog
 import io.github.merlin.assistant.ui.base.AssistantDropdownMenuField
 import io.github.merlin.assistant.ui.base.ErrorContent
+import io.github.merlin.assistant.ui.base.PagerTabIndicator
 import io.github.merlin.assistant.ui.base.ViewState
 import io.github.merlin.assistant.ui.screen.function.pot.settings.navigateToPotSettings
 import kotlinx.coroutines.launch
@@ -69,7 +74,7 @@ fun PotScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Image(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "",
                         )
                     }
@@ -129,7 +134,6 @@ fun PotScreen(
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PotDetailContent(
     potDetailState: PotUiState.PotDetailState,
@@ -151,6 +155,7 @@ fun PotDetailContent(
     val pagerState = rememberPagerState(
         pageCount = { tabLabels.size },
     )
+
     val scope = rememberCoroutineScope()
     Column(modifier = Modifier.fillMaxSize()) {
         Card(
@@ -164,11 +169,20 @@ fun PotDetailContent(
                     fontWeight = FontWeight.Bold,
                 )
                 Row {
-                    Text(text = "挑战次数：${potDetailState.adventureGoods}", modifier = Modifier.weight(1f))
-                    Text(text = "闯关次数：${potDetailState.bossGoods}", modifier = Modifier.weight(1f))
+                    Text(
+                        text = "挑战次数：${potDetailState.adventureGoods}",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "闯关次数：${potDetailState.bossGoods}",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 Row {
-                    Text(text = "当前关卡：${potDetailState.levelId}", modifier = Modifier.weight(1f))
+                    Text(
+                        text = "当前关卡：${potDetailState.levelId}",
+                        modifier = Modifier.weight(1f)
+                    )
                     Text(text = "当前首领：${potDetailState.bossId}", modifier = Modifier.weight(1f))
                 }
                 Text(text = "金币：${potDetailState.gold}")
@@ -201,18 +215,23 @@ fun PotDetailContent(
             selectedTabIndex = pagerState.currentPage,
             edgePadding = 15.dp,
             divider = {},
+            indicator = { tabPositions ->
+                PagerTabIndicator(
+                    pagerState = pagerState,
+                    tabPositions = tabPositions,
+                )
+            }
         ) {
-            tabLabels.mapIndexed { index, tabLabel ->
+            tabLabels.fastForEachIndexed { index, tabLabel ->
                 val selected = index == pagerState.currentPage
                 Tab(
+                    modifier = Modifier.height(48.dp),
                     selected = selected,
                     onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                 ) {
                     Text(
                         text = tabLabel,
-                        modifier = Modifier.padding(0.dp, 10.dp),
-                        textAlign = TextAlign.Center,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                     )
                 }
             }
@@ -220,7 +239,6 @@ fun PotDetailContent(
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            beyondViewportPageCount = 1,
         ) { page ->
             when (page) {
                 0 -> LogsPage(logs)
@@ -271,7 +289,17 @@ fun EquipmentPage(
 fun LogsPage(
     logs: List<String>
 ) {
+
+    val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(logs) {
+        if (logs.isNotEmpty()) {
+            lazyListState.scrollToItem(logs.size - 1)
+        }
+    }
+
     LazyColumn(
+        state = lazyListState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(15.dp, 5.dp)
     ) {

@@ -10,5 +10,5 @@ data class ShopResponse(
     @SerialName("msg")
     val msg: String?,
     @SerialName("commodityInfo")
-    val commodityInfo: List<Goods>?,
+    val commodityInfo: List<CommodityInfo>?,
 )

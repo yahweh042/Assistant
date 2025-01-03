@@ -35,6 +35,7 @@ import io.github.merlin.assistant.ui.screen.account.navigateToAccount
 import io.github.merlin.assistant.ui.screen.function.jewel.navigateToJewel
 import io.github.merlin.assistant.ui.screen.function.jiange.navigateToJianGe
 import io.github.merlin.assistant.ui.screen.function.pot.navigateToPot
+import io.github.merlin.assistant.ui.screen.function.shop.navigateToShop
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,6 +98,18 @@ fun HomeScreen(
                     ListItem(
                         modifier = Modifier.clickable { navController.navigateToJianGe() },
                         headlineContent = { Text(text = "剑阁秘境") },
+                        trailingContent = {
+                            Image(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = ""
+                            )
+                        },
+                    )
+                }
+                item {
+                    ListItem(
+                        modifier = Modifier.clickable { navController.navigateToShop() },
+                        headlineContent = { Text(text = "商店") },
                         trailingContent = {
                             Image(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
