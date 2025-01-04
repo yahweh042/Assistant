@@ -109,7 +109,7 @@ fun HomeScreen(
                 item {
                     ListItem(
                         modifier = Modifier.clickable { navController.navigateToShop() },
-                        headlineContent = { Text(text = "商店") },
+                        headlineContent = { Text(text = "杂货铺") },
                         trailingContent = {
                             Image(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,

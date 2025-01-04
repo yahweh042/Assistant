@@ -227,7 +227,7 @@ fun PotDetailContent(
                 Tab(
                     modifier = Modifier.height(48.dp),
                     selected = selected,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                    onClick = { scope.launch { pagerState.scrollToPage(index) } },
                 ) {
                     Text(
                         text = tabLabel,

@@ -17,6 +17,8 @@ class LocalDataSource(
     private val jewelSettingsKey = stringPreferencesKey("jewelSettingsKey")
     private val potSettingsKey = stringPreferencesKey("potSettingsKey")
 
+    private val showShopTypesKey = stringPreferencesKey("showShopTypesKey")
+
     val accountWrapperFlow = context.dataStore.data.map {
         it[accountWrapperKey]
     }
@@ -47,4 +49,7 @@ class LocalDataSource(
         }
     }
 
+    val showShopTypesFlow = context.dataStore.data.map {
+        it[showShopTypesKey]
+    }
 }
