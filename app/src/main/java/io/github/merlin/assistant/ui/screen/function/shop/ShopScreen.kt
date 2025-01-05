@@ -1,17 +1,12 @@
 package io.github.merlin.assistant.ui.screen.function.shop
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.List
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,7 +20,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -35,7 +29,8 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import io.github.merlin.assistant.ui.base.PagerTabIndicator
+import io.github.merlin.assistant.ui.base.LaunchedEvent
+import io.github.merlin.assistant.ui.screen.function.shop.page.ShopPage
 import kotlinx.coroutines.launch
 
 
@@ -45,14 +40,18 @@ fun ShopScreen(
     navController: NavController
 ) {
 
-    val tabLabels = listOf("杂货铺", "兑换", "万能", "法器", "晶核", "其他")
     val viewModel: ShopViewModel = hiltViewModel()
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState { state.shopTypes.size }
 
-    val selectedTabIndex by rememberUpdatedState(pagerState.currentPage)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val scope = rememberCoroutineScope()
+
+    LaunchedEvent(viewModel) { event ->
+        when (event) {
+            is ShopEvent.ScrollToPage -> pagerState.scrollToPage(event.page)
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -62,22 +61,16 @@ fun ShopScreen(
                     title = {
                         if (state.shopTypes.isNotEmpty()) {
                             ScrollableTabRow(
-                                selectedTabIndex = selectedTabIndex,
+                                selectedTabIndex = pagerState.currentPage,
                                 containerColor = Color.Transparent,
                                 edgePadding = 0.dp,
                                 divider = {},
-                                indicator = { tabPositions ->
-                                    PagerTabIndicator(
-                                        pagerState = pagerState,
-                                        tabPositions = tabPositions,
-                                    )
-                                }
                             ) {
                                 state.shopTypes.fastForEachIndexed { index, shopType ->
                                     if (shopType.show) {
                                         Tab(
                                             modifier = Modifier.height(48.dp),
-                                            selected = index == selectedTabIndex,
+                                            selected = index == pagerState.currentPage,
                                             onClick = {
                                                 scope.launch {
                                                     pagerState.scrollToPage(index)
@@ -86,7 +79,7 @@ fun ShopScreen(
                                         ) {
                                             Text(
                                                 text = shopType.name,
-                                                fontWeight = if (index == selectedTabIndex) FontWeight.Bold else FontWeight.Normal,
+                                                fontWeight = if (index == pagerState.currentPage) FontWeight.Bold else FontWeight.Normal,
                                                 style = MaterialTheme.typography.titleMedium,
                                             )
                                         }
@@ -112,7 +105,7 @@ fun ShopScreen(
                     actions = {
                         IconButton(onClick = {}) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.List,
+                                imageVector = Icons.Default.MoreVert,
                                 contentDescription = "",
                             )
                         }
@@ -121,23 +114,13 @@ fun ShopScreen(
             }
         }
     ) { paddingValues ->
-        HorizontalPager(
-            modifier = Modifier.fillMaxSize(),
-            state = pagerState,
-        ) {
-            LazyColumn(contentPadding = paddingValues) {
-                items(100) { num ->
-                    Text(
-                        text = num.toString(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(0.dp, 5.dp)
-                    )
-                }
-            }
+        HorizontalPager(state = pagerState) { page ->
+            ShopPage(
+                shopType = state.shopTypes[page].type,
+                contentPadding = paddingValues,
+            )
         }
     }
-
 }
 
 @Composable

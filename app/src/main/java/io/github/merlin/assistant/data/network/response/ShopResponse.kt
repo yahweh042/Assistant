@@ -9,6 +9,6 @@ data class ShopResponse(
     val result: Int,
     @SerialName("msg")
     val msg: String?,
-    @SerialName("commodityInfo")
+    @SerialName("commodity_info")
     val commodityInfo: List<CommodityInfo>?,
 )

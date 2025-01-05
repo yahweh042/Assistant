@@ -41,9 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -303,7 +301,7 @@ fun LogsPage(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(15.dp, 5.dp)
     ) {
-        items(logs) { log ->
+        items(logs, key = { it }) { log ->
             Text(text = log)
         }
     }

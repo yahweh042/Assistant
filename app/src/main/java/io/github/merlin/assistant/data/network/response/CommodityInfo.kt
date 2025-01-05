@@ -21,7 +21,7 @@ data class CommodityInfo(
     @SerialName("goods_type")
     val goodsType: Int,
     @SerialName("iconId")
-    val iconId: Int,
+    val iconId: Long,
     @SerialName("id")
     val id: Int,
     @SerialName("limit_type")

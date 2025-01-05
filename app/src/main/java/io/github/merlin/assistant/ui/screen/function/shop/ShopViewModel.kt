@@ -27,14 +27,20 @@ class ShopViewModel @Inject constructor(
     }
 
     override fun handleAction(action: ShopAction) {
+        when (action) {
+            is ShopAction.SelectedTabIndexChange -> handleSelectedTabIndexChange(action)
+        }
+    }
 
+    private fun handleSelectedTabIndexChange(action: ShopAction.SelectedTabIndexChange) {
+        viewModelScope.launch {
+
+        }
     }
 
     private fun receiveShopTypesUpdate(shopTypes: List<ShopType>) {
         viewModelScope.launch {
-            mutableStateFlow.update {
-                it.copy(shopTypes = shopTypes)
-            }
+            mutableStateFlow.update { it.copy(shopTypes = shopTypes) }
         }
     }
 

@@ -1,4 +1,7 @@
 package io.github.merlin.assistant.ui.screen.function.shop
 
-class ShopEvent {
+sealed class ShopEvent {
+
+    data class ScrollToPage(val page: Int): ShopEvent()
+
 }
