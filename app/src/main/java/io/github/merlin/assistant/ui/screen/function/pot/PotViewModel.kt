@@ -38,15 +38,49 @@ class PotViewModel @Inject constructor(
             is PotAction.Decompose -> handleDecompose(action)
             is PotAction.Equip -> handleEquip(action)
             is PotAction.GetAward -> handleGetAward(action)
+            is PotAction.UpgradeSlot -> handleUpgradeSlot(action)
+        }
+    }
+
+    private fun handleUpgradeSlot(action: PotAction.UpgradeSlot) {
+        job?.cancel()
+        job = viewModelScope.launch {
+            sendEvent(PotEvent.ShowBottomSheet)
+            mutableStateFlow.update {
+                it.copy(jobbing = true, logs = listOf())
+            }
+            val count = AtomicInteger(0)
+            while (true) {
+                val upgradeResult = potRepo.upgradeSlot(action.type)
+                if (upgradeResult.result != 0 || upgradeResult.addBlessing == null) {
+                    mutableStateFlow.update { it.copy(logs = it.logs.plus("未知错误 ${upgradeResult.msg}")) }
+                    break
+                }
+                if (upgradeResult.addBlessing == 0) {
+                    mutableStateFlow.update {
+                        it.copy(
+                            potDetailViewState = ViewState.Success(upgradeResult.toPotInfo()),
+                            logs = it.logs.plus("第${count.incrementAndGet()}次 强化成功")
+                        )
+                    }
+                    break
+                } else {
+                    mutableStateFlow.update {
+                        it.copy(
+                            potDetailViewState = ViewState.Success(upgradeResult.toPotInfo()),
+                            logs = it.logs.plus("第${count.incrementAndGet()}次 强化失败 祝福+${upgradeResult.addBlessing}")
+                        )
+                    }
+                }
+            }
+            mutableStateFlow.update { it.copy(jobbing = false) }
         }
     }
 
     private fun handleGetAward(action: PotAction.GetAward) {
         viewModelScope.launch {
             val getAwardResponse = potRepo.getAward(action.type)
-            mutableStateFlow.update {
-                it.copy(logs = it.logs.plus("领取 ${getAwardResponse.award}"))
-            }
+            sendEvent(PotEvent.ShowToast("领取 ${getAwardResponse.award}"))
         }
     }
 
@@ -91,6 +125,7 @@ class PotViewModel @Inject constructor(
     private fun handleBeginChallengeBoss(action: PotAction.BeginChallengeBossJob) {
         job?.cancel()
         job = viewModelScope.launch {
+            sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
                 it.copy(
                     jobbing = true,
@@ -98,43 +133,31 @@ class PotViewModel @Inject constructor(
                     logs = listOf(),
                 )
             }
-            val indexResponse = potRepo.index()
-            if (indexResponse.result != 0) {
-                mutableStateFlow.update {
-                    it.copy(logs = it.logs.plus("未知错误 ${indexResponse.msg}"))
-                }
-                return@launch
-            }
             val count = AtomicInteger(0)
-            var running = true
-            while (running) {
-                mutableStateFlow.update {
-                    it.copy(logs = it.logs.plus("开始第${count.incrementAndGet()}轮次"))
-                }
+            while (true) {
                 val challengeResponse = potRepo.challengeBoss(action.bossId.toString())
-                if (challengeResponse.result == 0) {
+                if (challengeResponse.result != 0) {
                     mutableStateFlow.update {
-                        it.copy(potDetailViewState = ViewState.Success(challengeResponse.toPotInfo()))
+                        it.copy(logs = it.logs.plus("未知错误 ${challengeResponse.msg}"))
                     }
-                    if (challengeResponse.passed == 1) {
-                        mutableStateFlow.update {
-                            it.copy(logs = it.logs.plus("成功"))
-                        }
-                        challengeResponse.undisposed?.let {
-                            running = false
-                        }
-                    } else {
-                        mutableStateFlow.update {
-                            it.copy(logs = it.logs.plus("挑战失败 ${challengeResponse.msg}"))
-                        }
+                    break
+                }
+                mutableStateFlow.update {
+                    it.copy(potDetailViewState = ViewState.Success(challengeResponse.toPotInfo()))
+                }
+                if (challengeResponse.passed == 1) {
+                    mutableStateFlow.update {
+                        it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"))
                     }
-
+                    if (challengeResponse.undisposed != null) {
+                        mutableStateFlow.update {
+                            it.copy(logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"))
+                        }
+                        break
+                    }
                 } else {
-                    if ("请先处理上次掉落的装备" == challengeResponse.msg) {
-                        running = false
-                    }
                     mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("失败 ${challengeResponse.msg}"))
+                        it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战失败 ${challengeResponse.msg}"))
                     }
                 }
             }
@@ -157,6 +180,7 @@ class PotViewModel @Inject constructor(
     private fun handleBeginChallengeLevel(action: PotAction.BeginChallengeLevelJob) {
         job?.cancel()
         job = viewModelScope.launch {
+            sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
                 it.copy(
                     jobbing = true,
@@ -172,35 +196,30 @@ class PotViewModel @Inject constructor(
                 return@launch
             }
             val count = AtomicInteger(0)
-            var running = true
-            while (running) {
-                mutableStateFlow.update {
-                    it.copy(logs = it.logs.plus("开始第${count.incrementAndGet()}轮次"))
-                }
+            while (true) {
                 val challengeResponse = potRepo.challengeLevel(action.levelId.toString())
-                if (challengeResponse.result == 0) {
+                if (challengeResponse.result != 0) {
                     mutableStateFlow.update {
-                        it.copy(potDetailViewState = ViewState.Success(challengeResponse.toPotInfo()))
+                        it.copy(logs = it.logs.plus("未知错误 ${challengeResponse.msg}"))
                     }
-                    if (challengeResponse.passed == 1) {
-                        mutableStateFlow.update {
-                            it.copy(logs = it.logs.plus("成功"))
-                        }
-                        challengeResponse.undisposed?.let {
-                            running = false
-                        }
-                    } else {
-                        mutableStateFlow.update {
-                            it.copy(logs = it.logs.plus("挑战失败 ${challengeResponse.msg}"))
-                        }
+                    break
+                }
+                mutableStateFlow.update {
+                    it.copy(potDetailViewState = ViewState.Success(challengeResponse.toPotInfo()))
+                }
+                if (challengeResponse.passed == 1) {
+                    mutableStateFlow.update {
+                        it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"))
                     }
-
+                    if (challengeResponse.undisposed != null) {
+                        mutableStateFlow.update {
+                            it.copy(logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"))
+                        }
+                        break
+                    }
                 } else {
-                    if ("请先处理上次掉落的装备" == challengeResponse.msg || "该关卡已经通过啦" == challengeResponse.msg) {
-                        running = false
-                    }
                     mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("失败 ${challengeResponse.msg}"))
+                        it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战失败 ${challengeResponse.msg}"))
                     }
                 }
             }
@@ -212,34 +231,30 @@ class PotViewModel @Inject constructor(
     private fun handleBeginAdventure() {
         job?.cancel()
         job = viewModelScope.launch {
+            sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
                 it.copy(jobbing = true, logs = listOf())
             }
             val count = AtomicInteger(0)
-            var running = true
-            while (running) {
-                mutableStateFlow.update {
-                    it.copy(logs = it.logs.plus("开始第${count.incrementAndGet()}轮次"))
-                }
+            while (true) {
                 val adventureResponse = potRepo.adventure()
-                if (adventureResponse.result == 0) {
+                if (adventureResponse.result != 0) {
                     mutableStateFlow.update {
-                        it.copy(potDetailViewState = ViewState.Success(adventureResponse.toPotInfo()))
+                        it.copy(logs = it.logs.plus("未知错误 ${adventureResponse.msg}"))
                     }
-                    adventureResponse.undisposed?.let {
-                        running = false
-                    }
+                    break
+                }
+                mutableStateFlow.update {
+                    it.copy(
+                        potDetailViewState = ViewState.Success(adventureResponse.toPotInfo()),
+                        logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"),
+                    )
+                }
+                if (adventureResponse.undisposed != null) {
                     mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("挑战成功 ${adventureResponse.msg}"))
+                        it.copy(logs = it.logs.plus("请处理装备 ${adventureResponse.undisposed[0].name}"))
                     }
-
-                } else {
-                    if ("请先处理上次掉落的装备" == adventureResponse.msg) {
-                        running = false
-                    }
-                    mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("失败 ${adventureResponse.msg}"))
-                    }
+                    break
                 }
             }
             mutableStateFlow.update { it.copy(jobbing = false) }
@@ -251,6 +266,7 @@ class PotViewModel @Inject constructor(
         mutableStateFlow.update {
             it.copy(jobbing = false)
         }
+        sendEvent(PotEvent.HideBottomSheet)
     }
 
     private fun receivePotIndex() {

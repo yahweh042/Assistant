@@ -1,5 +1,6 @@
 package io.github.merlin.assistant.ui.screen.function.pot
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,17 +22,20 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -50,6 +56,7 @@ import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.ui.base.AssistantDialog
 import io.github.merlin.assistant.ui.base.AssistantDropdownMenuField
 import io.github.merlin.assistant.ui.base.ErrorContent
+import io.github.merlin.assistant.ui.base.LaunchedEvent
 import io.github.merlin.assistant.ui.base.PagerTabIndicator
 import io.github.merlin.assistant.ui.base.ViewState
 import io.github.merlin.assistant.ui.screen.function.pot.settings.navigateToPotSettings
@@ -65,7 +72,31 @@ fun PotScreen(
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
     val viewState = state.potDetailViewState
 
-    Scaffold(
+    val scaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            skipHiddenState = false,
+        )
+    )
+    val bottomSheetState = scaffoldState.bottomSheetState
+
+    val context = LocalContext.current
+
+    LaunchedEvent(viewModel = viewModel) { event ->
+        when (event) {
+            is PotEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT).show()
+            PotEvent.ShowBottomSheet -> bottomSheetState.expand()
+            PotEvent.HideBottomSheet -> bottomSheetState.hide()
+        }
+    }
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetSwipeEnabled = false,
+        sheetPeekHeight = 0.dp,
+        sheetContent = {
+            LogsBottomSheet(state.logs)
+        },
         topBar = {
             TopAppBar(
                 title = { Text(text = "壶中天地") },
@@ -100,7 +131,6 @@ fun PotScreen(
                     potDetailState = viewState.data as PotUiState.PotDetailState,
                     jobbing = state.jobbing,
                     chooserDialogState = state.chooserDialogState,
-                    logs = state.logs,
                     onEquip = { viewModel.trySendAction(PotAction.Equip(it)) },
                     onDecompose = { viewModel.trySendAction(PotAction.Decompose(it)) },
                     onBeginAdventureJob = { viewModel.trySendAction(PotAction.BeginAdventureJob) },
@@ -117,6 +147,9 @@ fun PotScreen(
                     onHideChooserDialog = { viewModel.trySendAction(PotAction.HideChooserDialog) },
                     onGetAward = remember(viewModel) {
                         { viewModel.trySendAction(PotAction.GetAward(it)) }
+                    },
+                    onUpgradeSlot = remember(viewModel) {
+                        { viewModel.trySendAction(PotAction.UpgradeSlot(it)) }
                     },
                 )
 
@@ -136,7 +169,6 @@ fun PotScreen(
 fun PotDetailContent(
     potDetailState: PotUiState.PotDetailState,
     jobbing: Boolean,
-    logs: List<String>,
     chooserDialogState: PotUiState.ChooserDialogState,
     onEquip: (Int) -> Unit,
     onDecompose: (Int) -> Unit,
@@ -147,9 +179,10 @@ fun PotDetailContent(
     onShowChooserDialog: (Int) -> Unit,
     onHideChooserDialog: () -> Unit,
     onGetAward: (String) -> Unit,
+    onUpgradeSlot: (String) -> Unit,
 ) {
 
-    val tabLabels = listOf("日志", "装备", "属性", "外部属性")
+    val tabLabels = listOf("装备", "强化", "属性", "外部属性")
     val pagerState = rememberPagerState(
         pageCount = { tabLabels.size },
     )
@@ -183,7 +216,13 @@ fun PotDetailContent(
                     )
                     Text(text = "当前首领：${potDetailState.bossId}", modifier = Modifier.weight(1f))
                 }
-                Text(text = "金币：${potDetailState.gold}")
+                Row {
+                    Text(
+                        text = "装备碎片：${potDetailState.upgradeGoods}",
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(text = "金币：${potDetailState.gold}", modifier = Modifier.weight(1f))
+                }
             }
         }
         Row(modifier = Modifier.padding(15.dp, 5.dp)) {
@@ -239,9 +278,12 @@ fun PotDetailContent(
             modifier = Modifier.fillMaxSize(),
         ) { page ->
             when (page) {
-                0 -> LogsPage(logs)
+                0 -> EquipmentPage(potDetailState.equipments)
 
-                1 -> EquipmentPage(potDetailState.equipments)
+                1 -> SlotPage(
+                    slots = potDetailState.slots,
+                    onUpgradeSlot = onUpgradeSlot,
+                )
 
                 2 -> AttrsPage(potDetailState.attrs)
 
@@ -301,7 +343,7 @@ fun LogsPage(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(15.dp, 5.dp)
     ) {
-        items(logs, key = { it }) { log ->
+        items(logs) { log ->
             Text(text = log)
         }
     }
@@ -415,6 +457,72 @@ fun EquipmentCard(equipment: PotResponse.Equipment) {
             Text(text = "战力：${equipment.point}")
             Text(text = "主属性：${equipment.primaryAttrs}")
             Text(text = "次属性：${equipment.subAttrs}")
+        }
+    }
+}
+
+@Composable
+fun SlotPage(
+    slots: List<PotResponse.Slot>,
+    onUpgradeSlot: (String) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(15.dp, 5.dp)
+    ) {
+        items(slots, key = { it.type }) { slot ->
+            SlotCard(slot = slot, onUpgradeSlot = onUpgradeSlot)
+        }
+    }
+}
+
+@Composable
+fun SlotCard(
+    slot: PotResponse.Slot,
+    onUpgradeSlot: (String) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(0.dp, 5.dp),
+    ) {
+        Column(modifier = Modifier.padding(15.dp)) {
+            Text(text = "类型：${slot.type}")
+            Text(text = "等级：${slot.level}/${slot.maxLevel}")
+            Text(text = "祝福：${slot.blessing}/${slot.maxBlessing}")
+            Text(text = "描述：${slot.desc}")
+            Text(text = "消耗：${slot.upgradeCostDesc}")
+            Text(text = "成功率：${slot.rateDesc}")
+            Row {
+                Spacer(modifier = Modifier.weight(1f))
+                Button(onClick = { onUpgradeSlot(slot.type.toString()) }) {
+                    Text(text = "强化")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LogsBottomSheet(logs: List<String>) {
+
+    val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(logs) {
+        if (logs.isNotEmpty()) {
+            lazyListState.scrollToItem(logs.size - 1)
+        }
+    }
+
+    LazyColumn(
+        state = lazyListState,
+        modifier = Modifier
+            .heightIn(min = 0.dp, max = 300.dp)
+            .fillMaxSize(),
+        contentPadding = PaddingValues(15.dp, 5.dp)
+    ) {
+        items(logs) { log ->
+            Text(text = log)
         }
     }
 }

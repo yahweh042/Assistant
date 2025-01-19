@@ -71,11 +71,11 @@ class PotService @Inject constructor(
         return networkDataSource.request<BasicResponse>("pot_world", params)
     }
 
-    suspend fun upgradeSlot(type: String): BasicResponse {
+    suspend fun upgradeSlot(type: String): PotResponse {
         val params = mutableMapOf<String, String>()
         params["op"] = "upgrade_slot"
         params["type"] = type
-        return networkDataSource.request<BasicResponse>("pot_world", params)
+        return networkDataSource.request<PotResponse>("pot_world", params)
     }
 
 }

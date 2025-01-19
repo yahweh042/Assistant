@@ -33,6 +33,12 @@ data class PotUiState(
         val externalAttrs: List<String>,
         val equipments: List<PotResponse.Equipment>,
         val undisposed: List<PotResponse.Equipment>,
+
+        val slots: List<PotResponse.Slot>,
+
+        val upgradeGoods: Long,
+
+        val addBlessing: Int,
     ) {
 
         val showUndisposedDialog

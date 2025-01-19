@@ -47,4 +47,8 @@ class PotRepo @Inject constructor(
     suspend fun equip(equipmentId: String): PotResponse {
         return potService.equip(equipmentId)
     }
+
+    suspend fun upgradeSlot(type: String) : PotResponse {
+        return potService.upgradeSlot(type)
+    }
 }

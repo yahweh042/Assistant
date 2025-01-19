@@ -9,8 +9,10 @@ sealed class PotAction {
     data class ShowChooserDialog(val type: Int) : PotAction()
     data object HideChooserDialog : PotAction()
 
-    data class Equip(val equipmentId: Int): PotAction()
-    data class Decompose(val equipmentId: Int): PotAction()
+    data class Equip(val equipmentId: Int) : PotAction()
+    data class Decompose(val equipmentId: Int) : PotAction()
 
-    data class GetAward(val type: String): PotAction()
+    data class GetAward(val type: String) : PotAction()
+
+    data class UpgradeSlot(val type: String) : PotAction()
 }

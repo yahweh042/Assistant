@@ -53,6 +53,15 @@ data class PotResponse(
 
     @SerialName("external_attrs")
     val externalAttrs: String?,
+
+    @SerialName("slots")
+    val slots: List<Slot>?,
+
+    @SerialName("upgrade_goods")
+    val upgradeGoods: Long?,
+
+    @SerialName("add_blessing")
+    val addBlessing: Int?,
 ) {
 
     fun toPotInfo(): PotUiState.PotDetailState {
@@ -74,7 +83,10 @@ data class PotResponse(
             equipments = equipments ?: listOf(),
             undisposed = undisposed ?: listOf(),
             addAttr = addAttr ?: "0%",
-            externalAttrs = (externalAttrs ?: "").split(" ")
+            externalAttrs = (externalAttrs ?: "").split(" "),
+            slots = slots ?: listOf(),
+            upgradeGoods = upgradeGoods ?: 0L,
+            addBlessing = addBlessing ?: -1,
         )
     }
 
@@ -101,6 +113,46 @@ data class PotResponse(
 
         @SerialName("equipped")
         val equipped: Equipment?,
+    )
+
+    @Serializable
+    data class Slot(
+        @SerialName("type")
+        val type: Int,
+        @SerialName("level")
+        val level: Int,
+        @SerialName("max_level")
+        val maxLevel: Int,
+        @SerialName("desc")
+        val desc: String,
+        @SerialName("next_desc")
+        val nextDesc: String,
+        @SerialName("equipment_id")
+        val equipmentId: Int,
+        @SerialName("blessing")
+        val blessing: Int,
+        @SerialName("max_blessing")
+        val maxBlessing: Int,
+        @SerialName("rate_desc")
+        val rateDesc: String,
+        @SerialName("upgrade_cost")
+        val upgradeCost: List<UpgradeCost>,
+    ) {
+        val upgradeCostDesc
+            get() = upgradeCost.joinToString(" ") { "${it.name}*${it.upgradeCostNum}" }
+
+    }
+
+    @Serializable
+    data class UpgradeCost(
+        @SerialName("goods_id")
+        val goodsId: Long,
+        @SerialName("name")
+        val name: String,
+        @SerialName("num")
+        val num: Long,
+        @SerialName("upgrade_cost_num")
+        val upgradeCostNum: Long,
     )
 
 }

@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.merlin.assistant.ui.base.LaunchedEvent
+import io.github.merlin.assistant.ui.base.PagerTabIndicator
 import io.github.merlin.assistant.ui.screen.function.shop.page.ShopPage
 import kotlinx.coroutines.launch
 
@@ -65,6 +66,12 @@ fun ShopScreen(
                                 containerColor = Color.Transparent,
                                 edgePadding = 0.dp,
                                 divider = {},
+                                indicator = { tabPositions ->
+                                    PagerTabIndicator(
+                                        pagerState = pagerState,
+                                        tabPositions = tabPositions,
+                                    )
+                                }
                             ) {
                                 state.shopTypes.fastForEachIndexed { index, shopType ->
                                     if (shopType.show) {
