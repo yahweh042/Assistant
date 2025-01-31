@@ -16,6 +16,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import io.github.merlin.assistant.ui.base.MenuListItem
+import io.github.merlin.assistant.ui.base.PotEquipFindOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +46,14 @@ fun PotSettingsScreen(
             modifier = Modifier.fillMaxSize(),
             contentPadding = paddingValues,
         ) {
+            item {
+                MenuListItem(
+                    title = "查找装备方式",
+                    value = 0,
+                    options = PotEquipFindOption.entries.toTypedArray(),
+                    onValueChange = {},
+                )
+            }
             item {
                 ListItem(
                     modifier = Modifier.clickable { },

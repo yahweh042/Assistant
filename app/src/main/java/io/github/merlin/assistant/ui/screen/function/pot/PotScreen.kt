@@ -28,11 +28,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
@@ -92,10 +92,9 @@ fun PotScreen(
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetSwipeEnabled = false,
         sheetPeekHeight = 0.dp,
         sheetContent = {
-            LogsBottomSheet(state.logs)
+            LogsBottomSheet(logs =state.logs)
         },
         topBar = {
             TopAppBar(
@@ -128,6 +127,7 @@ fun PotScreen(
             when (viewState) {
                 ViewState.Loading -> CircularProgressIndicator()
                 is ViewState.Success<*> -> PotDetailContent(
+                    paddingValues = paddingValues,
                     potDetailState = viewState.data as PotUiState.PotDetailState,
                     jobbing = state.jobbing,
                     chooserDialogState = state.chooserDialogState,
@@ -135,9 +135,7 @@ fun PotScreen(
                     onDecompose = { viewModel.trySendAction(PotAction.Decompose(it)) },
                     onBeginAdventureJob = { viewModel.trySendAction(PotAction.BeginAdventureJob) },
                     onBeginChallengeLevelJob = {
-                        viewModel.trySendAction(
-                            PotAction.BeginChallengeLevelJob(it)
-                        )
+                        viewModel.trySendAction(PotAction.BeginChallengeLevelJob(it))
                     },
                     onBeginChallengeBossJob = {
                         viewModel.trySendAction(PotAction.BeginChallengeBossJob(it))
@@ -167,6 +165,7 @@ fun PotScreen(
 
 @Composable
 fun PotDetailContent(
+    paddingValues: PaddingValues,
     potDetailState: PotUiState.PotDetailState,
     jobbing: Boolean,
     chooserDialogState: PotUiState.ChooserDialogState,
@@ -239,7 +238,7 @@ fun PotDetailContent(
                     Text(text = "挑战")
                 }
                 Spacer(modifier = Modifier.width(5.dp))
-                Button(onClick = { onShowChooserDialog(1) }) {
+                Button(onClick = { onBeginChallengeLevelJob(potDetailState.levelId) }) {
                     Text(text = "闯关")
                 }
                 Spacer(modifier = Modifier.width(5.dp))
@@ -290,16 +289,11 @@ fun PotDetailContent(
                 3 -> AttrsPage(potDetailState.externalAttrs, addAttr = potDetailState.addAttr)
             }
         }
-        ChooserDialog(
-            currentId = 1,
+        ChooserBossDialog(
+            currentId = potDetailState.bossId,
             chooserDialogState = chooserDialogState,
             onChooserCancel = onHideChooserDialog,
-            onChooserConfirm = { type, chooserId ->
-                when (type) {
-                    1 -> onBeginChallengeLevelJob(chooserId)
-                    2 -> onBeginChallengeBossJob(chooserId)
-                }
-            },
+            onChooserConfirm = { onBeginChallengeBossJob(it) },
         )
         if (potDetailState.showUndisposedDialog) {
             UndisposedDialog(
@@ -321,30 +315,6 @@ fun EquipmentPage(
     ) {
         items(equipments, key = { it.equipmentId }) { equipment ->
             EquipmentCard(equipment = equipment)
-        }
-    }
-}
-
-@Composable
-fun LogsPage(
-    logs: List<String>
-) {
-
-    val lazyListState = rememberLazyListState()
-
-    LaunchedEffect(logs) {
-        if (logs.isNotEmpty()) {
-            lazyListState.scrollToItem(logs.size - 1)
-        }
-    }
-
-    LazyColumn(
-        state = lazyListState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(15.dp, 5.dp)
-    ) {
-        items(logs) { log ->
-            Text(text = log)
         }
     }
 }
@@ -374,11 +344,11 @@ fun AttrsPage(
 }
 
 @Composable
-fun ChooserDialog(
+fun ChooserBossDialog(
     currentId: Int,
     chooserDialogState: PotUiState.ChooserDialogState,
     onChooserCancel: () -> Unit,
-    onChooserConfirm: (type: Int, chooserId: Int) -> Unit,
+    onChooserConfirm: (chooserId: Int) -> Unit,
 ) {
 
     var chooserId by remember { mutableIntStateOf(currentId) }
@@ -388,12 +358,12 @@ fun ChooserDialog(
         is PotUiState.ChooserDialogState.Show -> AssistantDialog(
             onDismissRequest = { onChooserCancel() },
             confirmButton = {
-                Button(onClick = { onChooserConfirm(chooserDialogState.type, chooserId) }) {
+                TextButton(onClick = { onChooserConfirm(chooserId) }) {
                     Text(text = "确定")
                 }
             },
             dismissButton = {
-                OutlinedButton(onClick = onChooserCancel) {
+                TextButton(onClick = onChooserCancel) {
                     Text(text = "取消")
                 }
             },
@@ -420,12 +390,12 @@ fun UndisposedDialog(
     AssistantDialog(
         onDismissRequest = { },
         confirmButton = {
-            Button(onClick = { onEquip(undisposed.equipmentId) }) {
+            TextButton(onClick = { onEquip(undisposed.equipmentId) }) {
                 Text(text = "装备")
             }
         },
         dismissButton = {
-            OutlinedButton(onClick = { onDecompose(undisposed.equipmentId) }) {
+            TextButton(onClick = { onDecompose(undisposed.equipmentId) }) {
                 Text(text = "分解")
             }
         },
@@ -504,7 +474,9 @@ fun SlotCard(
 }
 
 @Composable
-fun LogsBottomSheet(logs: List<String>) {
+fun LogsBottomSheet(
+    logs: List<String>,
+) {
 
     val lazyListState = rememberLazyListState()
 
@@ -519,7 +491,7 @@ fun LogsBottomSheet(logs: List<String>) {
         modifier = Modifier
             .heightIn(min = 0.dp, max = 300.dp)
             .fillMaxSize(),
-        contentPadding = PaddingValues(15.dp, 5.dp)
+        contentPadding = PaddingValues(horizontal = 15.dp)
     ) {
         items(logs) { log ->
             Text(text = log)

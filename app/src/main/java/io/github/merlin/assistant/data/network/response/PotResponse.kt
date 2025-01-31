@@ -44,6 +44,8 @@ data class PotResponse(
 
     @SerialName("passed")
     val passed: Int?,
+    @SerialName("killed")
+    val killed: Int?,
 
     @SerialName("attrs")
     val attrs: String?,

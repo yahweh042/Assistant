@@ -34,7 +34,7 @@ class PotViewModel @Inject constructor(
             PotAction.RefreshPotInfo -> receivePotIndex()
             PotAction.BeginAdventureJob -> handleBeginAdventure()
             PotAction.HideChooserDialog -> handleHideChooserDialog()
-            is PotAction.ShowChooserDialog -> handleShowChooserDialog(action)
+            is PotAction.ShowChooserDialog -> handleShowChooserDialog()
             is PotAction.Decompose -> handleDecompose(action)
             is PotAction.Equip -> handleEquip(action)
             is PotAction.GetAward -> handleGetAward(action)
@@ -145,11 +145,11 @@ class PotViewModel @Inject constructor(
                 mutableStateFlow.update {
                     it.copy(potDetailViewState = ViewState.Success(challengeResponse.toPotInfo()))
                 }
-                if (challengeResponse.passed == 1) {
+                if (challengeResponse.killed == 1) {
                     mutableStateFlow.update {
                         it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"))
                     }
-                    if (challengeResponse.undisposed != null) {
+                    if (challengeResponse.undisposed?.isNotEmpty() == true) {
                         mutableStateFlow.update {
                             it.copy(logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"))
                         }
@@ -171,9 +171,9 @@ class PotViewModel @Inject constructor(
         }
     }
 
-    private fun handleShowChooserDialog(action: PotAction.ShowChooserDialog) {
+    private fun handleShowChooserDialog() {
         mutableStateFlow.update {
-            it.copy(chooserDialogState = PotUiState.ChooserDialogState.Show(action.type))
+            it.copy(chooserDialogState = PotUiState.ChooserDialogState.Show)
         }
     }
 
@@ -182,22 +182,12 @@ class PotViewModel @Inject constructor(
         job = viewModelScope.launch {
             sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
-                it.copy(
-                    jobbing = true,
-                    chooserDialogState = PotUiState.ChooserDialogState.Hide,
-                    logs = listOf(),
-                )
+                it.copy(jobbing = true, logs = listOf())
             }
-            val indexResponse = potRepo.index()
-            if (indexResponse.result != 0) {
-                mutableStateFlow.update {
-                    it.copy(logs = it.logs.plus("未知错误 ${indexResponse.msg}"))
-                }
-                return@launch
-            }
+            val levelId = action.levelId + 1
             val count = AtomicInteger(0)
             while (true) {
-                val challengeResponse = potRepo.challengeLevel(action.levelId.toString())
+                val challengeResponse = potRepo.challengeLevel(levelId.toString())
                 if (challengeResponse.result != 0) {
                     mutableStateFlow.update {
                         it.copy(logs = it.logs.plus("未知错误 ${challengeResponse.msg}"))
@@ -211,7 +201,7 @@ class PotViewModel @Inject constructor(
                     mutableStateFlow.update {
                         it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"))
                     }
-                    if (challengeResponse.undisposed != null) {
+                    if (challengeResponse.undisposed?.isNotEmpty() == true) {
                         mutableStateFlow.update {
                             it.copy(logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"))
                         }
@@ -250,7 +240,7 @@ class PotViewModel @Inject constructor(
                         logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"),
                     )
                 }
-                if (adventureResponse.undisposed != null) {
+                if (adventureResponse.undisposed?.isNotEmpty() == true) {
                     mutableStateFlow.update {
                         it.copy(logs = it.logs.plus("请处理装备 ${adventureResponse.undisposed[0].name}"))
                     }

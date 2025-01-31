@@ -47,7 +47,7 @@ data class PotUiState(
     }
 
     sealed class ChooserDialogState {
-        data class Show(val type: Int) : ChooserDialogState()
+        data object Show : ChooserDialogState()
         data object Hide : ChooserDialogState()
     }
 
