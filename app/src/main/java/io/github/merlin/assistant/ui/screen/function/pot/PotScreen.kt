@@ -11,33 +11,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +51,7 @@ import io.github.merlin.assistant.ui.base.AssistantDialog
 import io.github.merlin.assistant.ui.base.AssistantDropdownMenuField
 import io.github.merlin.assistant.ui.base.ErrorContent
 import io.github.merlin.assistant.ui.base.LaunchedEvent
+import io.github.merlin.assistant.ui.base.LogsBottomSheet
 import io.github.merlin.assistant.ui.base.PagerTabIndicator
 import io.github.merlin.assistant.ui.base.ViewState
 import io.github.merlin.assistant.ui.screen.function.pot.settings.navigateToPotSettings
@@ -71,31 +66,15 @@ fun PotScreen(
     val viewModel: PotViewModel = hiltViewModel()
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
     val viewState = state.potDetailViewState
-
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            skipHiddenState = false,
-        )
-    )
-    val bottomSheetState = scaffoldState.bottomSheetState
-
     val context = LocalContext.current
 
     LaunchedEvent(viewModel = viewModel) { event ->
         when (event) {
             is PotEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT).show()
-            PotEvent.ShowBottomSheet -> bottomSheetState.expand()
-            PotEvent.HideBottomSheet -> bottomSheetState.hide()
         }
     }
 
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetPeekHeight = 0.dp,
-        sheetContent = {
-            LogsBottomSheet(logs =state.logs)
-        },
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = "壶中天地") },
@@ -119,9 +98,7 @@ fun PotScreen(
         },
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             when (viewState) {
@@ -158,6 +135,14 @@ fun PotScreen(
             }
 
         }
+        LogsBottomSheet(
+            logs = state.logs,
+            showBottomSheet = state.showBottomSheet,
+            paddingValues = paddingValues,
+            onDismissRequest = {
+                viewModel.trySendAction(PotAction.HideBottomSheet)
+            }
+        )
     }
 
 }
@@ -187,7 +172,11 @@ fun PotDetailContent(
     )
 
     val scope = rememberCoroutineScope()
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = paddingValues.calculateTopPadding())
+    ) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -277,16 +266,24 @@ fun PotDetailContent(
             modifier = Modifier.fillMaxSize(),
         ) { page ->
             when (page) {
-                0 -> EquipmentPage(potDetailState.equipments)
+                0 -> EquipmentPage(
+                    paddingValues = paddingValues,
+                    equipments = potDetailState.equipments,
+                )
 
                 1 -> SlotPage(
+                    paddingValues = paddingValues,
                     slots = potDetailState.slots,
                     onUpgradeSlot = onUpgradeSlot,
                 )
 
-                2 -> AttrsPage(potDetailState.attrs)
+                2 -> AttrsPage(paddingValues = paddingValues, attrs = potDetailState.attrs)
 
-                3 -> AttrsPage(potDetailState.externalAttrs, addAttr = potDetailState.addAttr)
+                3 -> AttrsPage(
+                    paddingValues = paddingValues,
+                    attrs = potDetailState.externalAttrs,
+                    addAttr = potDetailState.addAttr,
+                )
             }
         }
         ChooserBossDialog(
@@ -307,11 +304,12 @@ fun PotDetailContent(
 
 @Composable
 fun EquipmentPage(
+    paddingValues: PaddingValues,
     equipments: List<PotResponse.Equipment>,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(15.dp, 5.dp)
+        contentPadding = paddingValues.innerPagePaddingValues(),
     ) {
         items(equipments, key = { it.equipmentId }) { equipment ->
             EquipmentCard(equipment = equipment)
@@ -322,12 +320,13 @@ fun EquipmentPage(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AttrsPage(
+    paddingValues: PaddingValues,
     attrs: List<String>,
     addAttr: String? = null,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(15.dp, 5.dp)
+        contentPadding = paddingValues.innerPagePaddingValues()
     ) {
         addAttr?.let {
             stickyHeader {
@@ -433,12 +432,13 @@ fun EquipmentCard(equipment: PotResponse.Equipment) {
 
 @Composable
 fun SlotPage(
+    paddingValues: PaddingValues,
     slots: List<PotResponse.Slot>,
     onUpgradeSlot: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(15.dp, 5.dp)
+        contentPadding = paddingValues.innerPagePaddingValues(),
     ) {
         items(slots, key = { it.type }) { slot ->
             SlotCard(slot = slot, onUpgradeSlot = onUpgradeSlot)
@@ -473,28 +473,11 @@ fun SlotCard(
     }
 }
 
-@Composable
-fun LogsBottomSheet(
-    logs: List<String>,
-) {
-
-    val lazyListState = rememberLazyListState()
-
-    LaunchedEffect(logs) {
-        if (logs.isNotEmpty()) {
-            lazyListState.scrollToItem(logs.size - 1)
-        }
-    }
-
-    LazyColumn(
-        state = lazyListState,
-        modifier = Modifier
-            .heightIn(min = 0.dp, max = 300.dp)
-            .fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 15.dp)
-    ) {
-        items(logs) { log ->
-            Text(text = log)
-        }
-    }
+fun PaddingValues.innerPagePaddingValues(): PaddingValues {
+    return PaddingValues(
+        start = 15.dp,
+        end = 15.dp,
+        top = 5.dp,
+        bottom = this.calculateBottomPadding(),
+    )
 }

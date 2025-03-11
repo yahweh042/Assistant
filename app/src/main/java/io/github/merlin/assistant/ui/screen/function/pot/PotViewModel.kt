@@ -39,15 +39,28 @@ class PotViewModel @Inject constructor(
             is PotAction.Equip -> handleEquip(action)
             is PotAction.GetAward -> handleGetAward(action)
             is PotAction.UpgradeSlot -> handleUpgradeSlot(action)
+            PotAction.HideBottomSheet -> handleHideBottomSheet()
+        }
+    }
+
+    private fun handleHideBottomSheet() {
+        job?.cancel()
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(showBottomSheet = false, jobbing = false)
+            }
         }
     }
 
     private fun handleUpgradeSlot(action: PotAction.UpgradeSlot) {
         job?.cancel()
         job = viewModelScope.launch {
-            sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
-                it.copy(jobbing = true, logs = listOf())
+                it.copy(
+                    jobbing = true,
+                    logs = listOf(),
+                    showBottomSheet = true,
+                )
             }
             val count = AtomicInteger(0)
             while (true) {
@@ -125,12 +138,12 @@ class PotViewModel @Inject constructor(
     private fun handleBeginChallengeBoss(action: PotAction.BeginChallengeBossJob) {
         job?.cancel()
         job = viewModelScope.launch {
-            sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
                 it.copy(
                     jobbing = true,
                     chooserDialogState = PotUiState.ChooserDialogState.Hide,
                     logs = listOf(),
+                    showBottomSheet = true,
                 )
             }
             val count = AtomicInteger(0)
@@ -180,9 +193,12 @@ class PotViewModel @Inject constructor(
     private fun handleBeginChallengeLevel(action: PotAction.BeginChallengeLevelJob) {
         job?.cancel()
         job = viewModelScope.launch {
-            sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
-                it.copy(jobbing = true, logs = listOf())
+                it.copy(
+                    jobbing = true,
+                    logs = listOf(),
+                    showBottomSheet = true,
+                )
             }
             val levelId = action.levelId + 1
             val count = AtomicInteger(0)
@@ -221,9 +237,12 @@ class PotViewModel @Inject constructor(
     private fun handleBeginAdventure() {
         job?.cancel()
         job = viewModelScope.launch {
-            sendEvent(PotEvent.ShowBottomSheet)
             mutableStateFlow.update {
-                it.copy(jobbing = true, logs = listOf())
+                it.copy(
+                    jobbing = true,
+                    logs = listOf(),
+                    showBottomSheet = true,
+                )
             }
             val count = AtomicInteger(0)
             while (true) {
@@ -254,9 +273,10 @@ class PotViewModel @Inject constructor(
     private fun handleEndJob() {
         job?.cancel()
         mutableStateFlow.update {
-            it.copy(jobbing = false)
+            it.copy(
+                jobbing = false,
+            )
         }
-        sendEvent(PotEvent.HideBottomSheet)
     }
 
     private fun receivePotIndex() {

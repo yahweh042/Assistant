@@ -12,7 +12,9 @@ fun JianGeQueryResponse.toViewState(): JianGeUiState.QueryState {
 }
 
 data class JianGeUiState(
-    val viewState: ViewState = ViewState.Loading
+    val viewState: ViewState = ViewState.Loading,
+    val logs: List<String> = listOf(),
+    val showBottomSheet: Boolean = false,
 ) {
 
     data class QueryState(

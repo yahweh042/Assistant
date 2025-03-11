@@ -17,7 +17,7 @@ class AccountViewModel @Inject constructor(
     private val accountRepo: AccountRepo
 ) : AbstractViewModel<AccountUiState, AccountEvent, AccountAction>(
     initialState = run {
-        AccountUiState(accounts = listOf())
+        AccountUiState()
     }
 ) {
 

@@ -8,6 +8,7 @@ data class PotUiState(
     val potDetailViewState: ViewState = ViewState.Loading,
     val chooserDialogState: ChooserDialogState = ChooserDialogState.Hide,
     val jobbing: Boolean = false,
+    val showBottomSheet: Boolean = false,
 ) {
 
     data class PotDetailState(

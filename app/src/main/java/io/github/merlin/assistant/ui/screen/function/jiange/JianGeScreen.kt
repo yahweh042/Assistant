@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.merlin.assistant.ui.base.ErrorContent
 import io.github.merlin.assistant.ui.base.LoadingContent
+import io.github.merlin.assistant.ui.base.LogsBottomSheet
 import io.github.merlin.assistant.ui.base.ViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,8 +63,17 @@ fun JianGeScreen(
             is ViewState.Success<*> -> JianGeContent(
                 modifier = Modifier.padding(paddingValues),
                 queryState = viewState.data as JianGeUiState.QueryState,
+                viewModel
             )
         }
+        LogsBottomSheet(
+            logs = state.logs,
+            showBottomSheet = state.showBottomSheet,
+            paddingValues = paddingValues,
+            onDismissRequest = {
+                viewModel.trySendAction(JianGeAction.HideBottomSheet)
+            },
+        )
     }
 
 }
@@ -70,7 +81,8 @@ fun JianGeScreen(
 @Composable
 fun JianGeContent(
     modifier: Modifier = Modifier,
-    queryState: JianGeUiState.QueryState
+    queryState: JianGeUiState.QueryState,
+    viewModel: JianGeViewModel
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Card(
@@ -83,5 +95,9 @@ fun JianGeContent(
                 Text(text = "结束时间：${queryState.activityEndTime}")
             }
         }
+        Button(onClick = { viewModel.trySendAction(JianGeAction.Begin) }) {
+            Text(text = "begin")
+        }
     }
 }
+

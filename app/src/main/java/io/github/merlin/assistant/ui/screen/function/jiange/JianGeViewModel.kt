@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.data.network.service.JianGeService
 import io.github.merlin.assistant.ui.base.AbstractViewModel
 import io.github.merlin.assistant.ui.base.ViewState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,8 +24,32 @@ class JianGeViewModel @Inject constructor(
     }
 
     override fun handleAction(action: JianGeAction) {
-        when(action) {
+        when (action) {
             JianGeAction.Query -> query()
+            JianGeAction.Begin -> handleBegin(action)
+            JianGeAction.HideBottomSheet -> handleHideBottomSheet(action)
+        }
+    }
+
+    private fun handleHideBottomSheet(action: JianGeAction) {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(showBottomSheet = false)
+            }
+        }
+    }
+
+    private fun handleBegin(action: JianGeAction) {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(showBottomSheet = true)
+            }
+            for (i in 0 until 100) {
+                delay(2_000)
+                mutableStateFlow.update {
+                    it.copy(logs = it.logs.plus("1234555${i}"))
+                }
+            }
         }
     }
 
