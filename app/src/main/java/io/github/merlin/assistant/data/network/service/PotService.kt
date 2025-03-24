@@ -50,8 +50,8 @@ class PotService @Inject constructor(
         return networkDataSource.request<PotResponse>("pot_world", params)
     }
 
-    suspend fun decompose(equipmentId: String): PotResponse {
-        val params = mutableMapOf<String, String>()
+    suspend fun decompose(equipmentId: Int): PotResponse {
+        val params = mutableMapOf<String, Any>()
         params["op"] = "decompose"
         params["equipment_id"] = equipmentId
         return networkDataSource.request<PotResponse>("pot_world", params)

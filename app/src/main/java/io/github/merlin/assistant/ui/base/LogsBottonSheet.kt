@@ -80,7 +80,7 @@ fun LogsBottomSheet(
                     bottom = paddingValues.calculateBottomPadding()
                 )
             ) {
-                items(logs, key = { it }) { log ->
+                items(logs) { log ->
                     Text(text = log)
                 }
             }
@@ -93,7 +93,7 @@ fun LogsBottomSheet(
 fun DragHandle(onDismissRequest: () -> Unit) {
     Row(modifier = Modifier.padding(22.dp)) {
         Column(modifier = Modifier.weight(1.0f)) {
-            Text(text = "Log")
+            Text(text = "运行日志")
         }
         IconButton(onClick = onDismissRequest, modifier = Modifier.size(20.dp)) {
             Icon(

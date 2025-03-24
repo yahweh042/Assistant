@@ -10,6 +10,6 @@ sealed class ShopPageAction {
 
     data class ShowDialog(val commodityInfo: CommodityInfo): ShopPageAction()
 
-    data class UpdateSlidePosition(val commodityInfo: CommodityInfo, val sidePosition: Float) : ShopPageAction()
+    data class UpdateGoodsNum(val commodityInfo: CommodityInfo, val num: Int) : ShopPageAction()
 
 }

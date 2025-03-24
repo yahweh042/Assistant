@@ -1,18 +1,26 @@
 package io.github.merlin.assistant.ui.screen.function.jiange
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,13 +65,13 @@ fun JianGeScreen(
             is ViewState.Error -> ErrorContent(
                 modifier = Modifier.padding(paddingValues),
                 msg = viewState.msg,
-                retry = { viewModel.trySendAction(JianGeAction.Query) },
+                retry = { viewModel.trySendAction(JianGeAction.Query(isSpecial = 0)) },
             )
 
             is ViewState.Success<*> -> JianGeContent(
                 modifier = Modifier.padding(paddingValues),
                 queryState = viewState.data as JianGeUiState.QueryState,
-                viewModel
+                viewModel = viewModel,
             )
         }
         LogsBottomSheet(
@@ -84,19 +92,44 @@ fun JianGeContent(
     queryState: JianGeUiState.QueryState,
     viewModel: JianGeViewModel
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Card(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(15.dp, 0.dp)
-        ) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(15.dp, 0.dp),
+    ) {
+
+        Row {
+            TextButton(
+                onClick = { viewModel.trySendAction(JianGeAction.Query(isSpecial = 0)) },
+                modifier = Modifier.weight(1f),
+                colors = if (queryState.isSpecial == 0) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
+            ) {
+                Text(text = "普通关卡")
+            }
+            Spacer(modifier = Modifier.width(15.dp))
+            TextButton(
+                onClick = { viewModel.trySendAction(JianGeAction.Query(isSpecial = 1)) },
+                modifier = Modifier.weight(1f),
+                colors = if (queryState.isSpecial == 1) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
+            ) {
+                Text(text = "秘境关卡")
+            }
+        }
+        Spacer(modifier = Modifier.height(5.dp))
+        Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(15.dp)) {
                 Text(text = "最高层数：${queryState.highestPassFloor}")
                 Text(text = "结束时间：${queryState.activityEndTime}")
             }
         }
         Button(onClick = { viewModel.trySendAction(JianGeAction.Begin) }) {
-            Text(text = "begin")
+            Text(text = "挑战")
+        }
+
+        LazyColumn {
+            items(queryState.levelArray) { level ->
+                Text(text = level.levelId.toString())
+            }
         }
     }
 }

@@ -40,7 +40,7 @@ class PotRepo @Inject constructor(
         return potService.adventure()
     }
 
-    suspend fun decompose(equipmentId: String): PotResponse {
+    suspend fun decompose(equipmentId: Int): PotResponse {
         return potService.decompose(equipmentId)
     }
 

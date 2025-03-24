@@ -8,6 +8,8 @@ fun JianGeQueryResponse.toViewState(): JianGeUiState.QueryState {
         highestPassFloor = this.highestPassFloor ?: 0,
         isGetAward = this.isGetAward ?: 0,
         activityEndTime = this.activityEndTime ?: "",
+        levelArray = this.levelArray ?: listOf(),
+        isSpecial = this.isSpecial ?: 0,
     )
 }
 
@@ -21,6 +23,8 @@ data class JianGeUiState(
         val highestPassFloor: Int = 0,
         val activityEndTime: String = "",
         val isGetAward: Int = 0,
+        val levelArray: List<JianGeQueryResponse.LevelArray> = listOf(),
+        val isSpecial: Int = 0,
     )
 
 }

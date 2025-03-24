@@ -115,7 +115,7 @@ class PotViewModel @Inject constructor(
 
     private fun handleDecompose(action: PotAction.Decompose) {
         viewModelScope.launch {
-            val decomposeResult = potRepo.decompose(action.equipmentId.toString())
+            val decomposeResult = potRepo.decompose(action.equipmentId)
             if (decomposeResult.result == 0) {
                 mutableStateFlow.update {
                     it.copy(
@@ -254,16 +254,34 @@ class PotViewModel @Inject constructor(
                     break
                 }
                 mutableStateFlow.update {
-                    it.copy(
-                        potDetailViewState = ViewState.Success(adventureResponse.toPotInfo()),
-                        logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"),
-                    )
+                    it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"))
                 }
                 if (adventureResponse.undisposed?.isNotEmpty() == true) {
-                    mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("请处理装备 ${adventureResponse.undisposed[0].name}"))
+                    val undisposed = adventureResponse.undisposed[0]
+                    val equipped = undisposed.equipped
+                    if (undisposed.point < equipped?.point ?: 0) {
+                        val decomposeResult = potRepo.decompose(undisposed.equipmentId)
+                        if (decomposeResult.result == 0) {
+                            mutableStateFlow.update {
+                                it.copy(
+                                    potDetailViewState = ViewState.Success(decomposeResult.toPotInfo()),
+                                    logs = it.logs.plus("分解 ${decomposeResult.msg}")
+                                )
+                            }
+                        } else {
+                            mutableStateFlow.update {
+                                it.copy(potDetailViewState = ViewState.Error(decomposeResult.msg))
+                            }
+                        }
+                    } else {
+                        mutableStateFlow.update {
+                            it.copy(
+                                potDetailViewState = ViewState.Success(adventureResponse.toPotInfo()),
+                                logs = it.logs.plus("请处理装备 ${undisposed.name}"),
+                            )
+                        }
+                        break
                     }
-                    break
                 }
             }
             mutableStateFlow.update { it.copy(jobbing = false) }

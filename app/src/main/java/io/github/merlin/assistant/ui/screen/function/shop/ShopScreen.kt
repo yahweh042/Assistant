@@ -1,25 +1,33 @@
 package io.github.merlin.assistant.ui.screen.function.shop
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -48,10 +56,16 @@ fun ShopScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val scope = rememberCoroutineScope()
 
+    val listState = rememberLazyListState()
+
     LaunchedEvent(viewModel) { event ->
         when (event) {
             is ShopEvent.ScrollToPage -> pagerState.scrollToPage(event.page)
         }
+    }
+
+    LaunchedEffect(key1 = pagerState.currentPage) {
+        listState.animateScrollToItem(pagerState.currentPage)
     }
 
     Scaffold(
@@ -61,34 +75,18 @@ fun ShopScreen(
                 TopAppBar(
                     title = {
                         if (state.shopTypes.isNotEmpty()) {
-                            ScrollableTabRow(
-                                selectedTabIndex = pagerState.currentPage,
-                                containerColor = Color.Transparent,
-                                edgePadding = 0.dp,
-                                divider = {},
-                                indicator = { tabPositions ->
-                                    PagerTabIndicator(
-                                        pagerState = pagerState,
-                                        tabPositions = tabPositions,
-                                    )
-                                }
-                            ) {
+                            LazyRow(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, state = listState) {
                                 state.shopTypes.fastForEachIndexed { index, shopType ->
                                     if (shopType.show) {
-                                        Tab(
-                                            modifier = Modifier.height(48.dp),
-                                            selected = index == pagerState.currentPage,
-                                            onClick = {
-                                                scope.launch {
-                                                    pagerState.scrollToPage(index)
-                                                }
+                                        item {
+                                            TextButton(
+                                                onClick = {
+                                                    scope.launch { pagerState.scrollToPage(index) }
+                                                },
+                                                colors = if (index == pagerState.currentPage) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
+                                            ) {
+                                                Text(text = shopType.name)
                                             }
-                                        ) {
-                                            Text(
-                                                text = shopType.name,
-                                                fontWeight = if (index == pagerState.currentPage) FontWeight.Bold else FontWeight.Normal,
-                                                style = MaterialTheme.typography.titleMedium,
-                                            )
                                         }
                                     }
                                 }

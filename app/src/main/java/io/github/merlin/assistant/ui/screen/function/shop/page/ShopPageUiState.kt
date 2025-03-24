@@ -16,7 +16,7 @@ data class ShopPageUiState(
         data object Hide : CommodityInfoDialogState()
         data class Show(
             val commodityInfo: CommodityInfo,
-            val sliderPosition: Float = 0f,
+            val num: Int = 0,
         ) : CommodityInfoDialogState()
     }
 

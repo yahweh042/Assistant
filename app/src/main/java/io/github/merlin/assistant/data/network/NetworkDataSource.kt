@@ -9,6 +9,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.ParametersBuilder
@@ -21,16 +22,17 @@ class NetworkDataSource @Inject constructor(
 
     val noAuthCmd = setOf("index")
 
-    suspend inline fun <reified T> request(cmd: String, params: Map<String, String> = mapOf()): T {
+    suspend inline fun <reified T> request(cmd: String, params: Map<String, Any> = mapOf()): T {
         val httpRequestBuilder = HttpRequestBuilder()
         httpRequestBuilder.url("https://zone1.ledou.qq.com/fcgi-bin/petpk")
         httpRequestBuilder.method = HttpMethod.Post
-        httpRequestBuilder.header(HttpHeaders.ContentType, "application/x-www-form-urlencoded")
+        httpRequestBuilder.header(HttpHeaders.ContentType, ContentType.Application.FormUrlEncoded)
         httpRequestBuilder.header(HttpHeaders.Origin, "https://res.ledou.qq.com")
         httpRequestBuilder.header(HttpHeaders.Referrer, "https://res.ledou.qq.com")
+        httpRequestBuilder.header(HttpHeaders.Accept, ContentType.Any)
         val parametersBuilder = ParametersBuilder()
         parametersBuilder.append("cmd", cmd)
-        params.forEach { (key, value) -> parametersBuilder.append(key, value) }
+        params.forEach { (key, value) -> parametersBuilder.append(key, value.toString()) }
         parametersBuilder.append("uin", "")
         parametersBuilder.append("skey", "")
         if (!noAuthCmd.contains(cmd)) {

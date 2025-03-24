@@ -4,11 +4,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -16,6 +20,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.merlin.assistant.data.network.response.CommodityInfo
@@ -23,6 +31,7 @@ import io.github.merlin.assistant.ui.base.AssistantDialog
 import io.github.merlin.assistant.ui.base.ErrorContent
 import io.github.merlin.assistant.ui.base.GoodsIcon
 import io.github.merlin.assistant.ui.base.LoadingContent
+import io.github.merlin.assistant.ui.base.NumberTextField
 import io.github.merlin.assistant.ui.base.ViewState
 
 @Composable
@@ -74,36 +83,54 @@ fun ShopPage(
                 }
             },
             title = {
-
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    GoodsIcon(iconId = dialogState.commodityInfo.iconId)
+                    Column(modifier = Modifier.padding(start = 10.dp)) {
+                        BasicText(
+                            text = dialogState.commodityInfo.name,
+                            style = TextStyle(fontSize = 16.sp),
+                        )
+                        BasicText(text = "货币：")
+                    }
+                }
             }
         ) {
             Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    GoodsIcon(iconId = dialogState.commodityInfo.iconId)
-                    Text(text = dialogState.commodityInfo.name, modifier = Modifier.weight(1f))
-                    Text(text = "货币：")
-                }
-                Text(text = "描述: ${dialogState.commodityInfo.goodsDes}")
-                Text(text = "使用: ${dialogState.commodityInfo.goodsEffect}")
+                Text(
+                    text = "描述",
+                    fontSize = 16.sp,
+                    color = Color.Black,
+                    modifier = Modifier.padding(vertical = 3.dp),
+                )
+                Text(text = dialogState.commodityInfo.goodsDes)
+                Text(
+                    text = "使用",
+                    fontSize = 16.sp,
+                    color = Color.Black,
+                    modifier = Modifier.padding(vertical = 3.dp),
+                )
+                Text(text = dialogState.commodityInfo.goodsEffect)
                 Text(text = "库存: ${dialogState.commodityInfo.remain}")
                 Text(text = "价格: ${dialogState.commodityInfo.price}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "数量：")
-                    Slider(
-                        modifier = Modifier.weight(1f),
-                        value = dialogState.sliderPosition,
+                    Text(
+                        text = "数量",
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        modifier = Modifier.padding(vertical = 3.dp),
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    NumberTextField(
+                        value = dialogState.num,
                         onValueChange = {
                             viewModel.trySendAction(
-                                ShopPageAction.UpdateSlidePosition(
+                                ShopPageAction.UpdateGoodsNum(
                                     dialogState.commodityInfo,
                                     it
                                 )
                             )
-                        },
-                        valueRange = 0f.rangeTo(dialogState.commodityInfo.rangeMaxNum.toFloat()),
-                        steps = dialogState.commodityInfo.rangeMaxNum - 1,
+                        }
                     )
-                    Text(text = "${dialogState.sliderPosition.toInt()}")
                 }
             }
         }
@@ -137,12 +164,7 @@ fun ShopGoodsItem(
         leadingContent = { GoodsIcon(iconId = commodityInfo.iconId) },
         headlineContent = { Text(text = commodityInfo.name) },
         supportingContent = {
-            Column {
-                Text(text = "描述: ${commodityInfo.goodsDes}")
-                Text(text = "使用: ${commodityInfo.goodsEffect}")
-                Text(text = "库存: ${commodityInfo.remain}")
-                Text(text = "价格: ${commodityInfo.price}")
-            }
+            Text(text = "剩余: ${commodityInfo.remain} | 价格: ${commodityInfo.price}")
         }
     )
 }

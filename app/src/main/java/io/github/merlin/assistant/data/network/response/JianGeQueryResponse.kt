@@ -24,4 +24,34 @@ data class JianGeQueryResponse(
     val result: Int,
     @SerialName("msg")
     val msg: String?,
-)
+) {
+
+    @Serializable
+    data class LevelArray(
+        @SerialName("award_array")
+        val awardArray: List<AwardArray>,
+        @SerialName("difficult_level")
+        val difficultLevel: Int,
+        @SerialName("first_pass_rold_name")
+        val firstPassRoldName: String,
+        @SerialName("is_special")
+        val isSpecial: Int,
+        @SerialName("level_id")
+        val levelId: Int,
+        @SerialName("npc_icon_id")
+        val npcIconId: Int,
+        @SerialName("score")
+        val score: Int
+    ) {
+
+        @Serializable
+        data class AwardArray(
+            @SerialName("ui_icon_desc")
+            val uiIconDesc: String,
+            @SerialName("ui_icon_id")
+            val uiIconId: Int
+        )
+
+    }
+
+}

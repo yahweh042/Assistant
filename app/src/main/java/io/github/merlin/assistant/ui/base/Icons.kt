@@ -9,13 +9,14 @@ import coil.compose.SubcomposeAsyncImage
 
 @Composable
 fun GoodsIcon(
-    iconId: Long
+    iconId: Long,
+    size: Int = 48,
 ) {
     SubcomposeAsyncImage(
         model = "https://res.ledou.qq.com/ledoures/goods/${iconId}.png",
         loading = { CircularProgressIndicator() },
         contentDescription = null,
-        modifier = Modifier.size(48.dp),
+        modifier = Modifier.size(size.dp),
     )
 }
 

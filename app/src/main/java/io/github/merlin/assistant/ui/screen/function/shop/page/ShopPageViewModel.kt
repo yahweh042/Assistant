@@ -1,7 +1,7 @@
 package io.github.merlin.assistant.ui.screen.function.shop.page
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.repo.ShopRepo
 import io.github.merlin.assistant.ui.base.AbstractViewModel
@@ -12,7 +12,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ShopPageViewModel @Inject constructor(
-    private val shopRepo: ShopRepo
+    private val shopRepo: ShopRepo,
+    private val stateHandle: SavedStateHandle
 ) : AbstractViewModel<ShopPageUiState, ShopPageEvent, ShopPageAction>(
     initialState = run {
         ShopPageUiState()
@@ -24,17 +25,25 @@ class ShopPageViewModel @Inject constructor(
             is ShopPageAction.RefreshShop -> handleRefreshShop(action)
             ShopPageAction.HideDialog -> handleHideDialog(action)
             is ShopPageAction.ShowDialog -> handleShowDialog(action)
-            is ShopPageAction.UpdateSlidePosition -> handleUpdateSlidePosition(action)
+            is ShopPageAction.UpdateGoodsNum -> handleUpdateGoodsNum(action)
         }
     }
 
-    private fun handleUpdateSlidePosition(action: ShopPageAction.UpdateSlidePosition) {
+    private fun handleUpdateGoodsNum(action: ShopPageAction.UpdateGoodsNum) {
         viewModelScope.launch {
+
+            val commodityInfo = action.commodityInfo
+            val num = when {
+                action.num < 0 -> 0
+                action.num > commodityInfo.maxNum -> commodityInfo.maxNum
+                else -> action.num
+            }
+
             mutableStateFlow.update {
                 it.copy(
                     dialogState = ShopPageUiState.CommodityInfoDialogState.Show(
                         commodityInfo = action.commodityInfo,
-                        sliderPosition = action.sidePosition,
+                        num = num,
                     )
                 )
             }
