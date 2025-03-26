@@ -47,7 +47,23 @@ fun JianGeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "剑阁秘境") },
+                title = {
+                    Row {
+                        TextButton(
+                            onClick = { viewModel.trySendAction(JianGeAction.Query(isSpecial = 0)) },
+                            colors = if (state.isSpecial == 0) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
+                        ) {
+                            Text(text = "普通关卡")
+                        }
+                        Spacer(modifier = Modifier.width(15.dp))
+                        TextButton(
+                            onClick = { viewModel.trySendAction(JianGeAction.Query(isSpecial = 1)) },
+                            colors = if (state.isSpecial == 1) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
+                        ) {
+                            Text(text = "秘境关卡")
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -98,24 +114,6 @@ fun JianGeContent(
             .padding(15.dp, 0.dp),
     ) {
 
-        Row {
-            TextButton(
-                onClick = { viewModel.trySendAction(JianGeAction.Query(isSpecial = 0)) },
-                modifier = Modifier.weight(1f),
-                colors = if (queryState.isSpecial == 0) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
-            ) {
-                Text(text = "普通关卡")
-            }
-            Spacer(modifier = Modifier.width(15.dp))
-            TextButton(
-                onClick = { viewModel.trySendAction(JianGeAction.Query(isSpecial = 1)) },
-                modifier = Modifier.weight(1f),
-                colors = if (queryState.isSpecial == 1) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
-            ) {
-                Text(text = "秘境关卡")
-            }
-        }
-        Spacer(modifier = Modifier.height(5.dp))
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(15.dp)) {
                 Text(text = "最高层数：${queryState.highestPassFloor}")

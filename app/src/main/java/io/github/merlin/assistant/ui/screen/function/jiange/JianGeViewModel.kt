@@ -81,12 +81,12 @@ class JianGeViewModel @Inject constructor(
     private fun query(isSpecial: Int = 0) {
         viewModelScope.launch {
             mutableStateFlow.update {
-                it.copy(viewState = ViewState.Loading)
+                it.copy(viewState = ViewState.Loading, isSpecial = isSpecial)
             }
             val queryResponse = jianGeService.query(isSpecial = isSpecial)
             if (queryResponse.result == 0) {
                 mutableStateFlow.update {
-                    it.copy(viewState = ViewState.Success(queryResponse.toViewState()))
+                    it.copy(viewState = ViewState.Success(queryResponse.toViewState()),)
                 }
             } else {
                 mutableStateFlow.update {

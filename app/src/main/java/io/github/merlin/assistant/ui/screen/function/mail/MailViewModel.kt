@@ -18,17 +18,25 @@ class MailViewModel @Inject constructor(
     }
 ) {
     init {
-        getMails()
+        queryMails()
     }
 
-    private fun getMails(type: Int = state.type) {
+    private fun queryMails(type: Int = state.type) {
         viewModelScope.launch {
             mutableStateFlow.update {
                 it.copy(viewState = ViewState.Loading, type = type)
             }
-            val mailResponse = mailService.getMails(type)
+            val mailResponse = mailService.queryMails(type)
             if (mailResponse.result == 0) {
-                mutableStateFlow.update { it.copy(viewState = ViewState.Success(MailUiState.MailState(mailResponse.mails))) }
+                mutableStateFlow.update {
+                    it.copy(
+                        viewState = ViewState.Success(
+                            MailUiState.MailState(
+                                mailResponse.mails
+                            )
+                        )
+                    )
+                }
             } else {
                 mutableStateFlow.update {
                     it.copy(viewState = ViewState.Error(mailResponse.msg ?: "未知错误"))
@@ -38,8 +46,31 @@ class MailViewModel @Inject constructor(
     }
 
     override fun handleAction(action: MailAction) {
-        when(action) {
-            is MailAction.GetMails -> getMails(action.type)
+        when (action) {
+            is MailAction.QueryMails -> queryMails(action.type)
+            is MailAction.OpenMail -> openMail(action.id)
+            MailAction.HideSheet -> hideSheet()
+        }
+    }
+
+    private fun hideSheet() {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(sheetState = MailUiState.SheetState.HideSheet)
+            }
+        }
+    }
+
+    private fun openMail(id: Int) {
+        viewModelScope.launch {
+            val openMailResponse = mailService.openMail(id)
+            if (openMailResponse.result == 0) {
+                mutableStateFlow.update {
+                    it.copy(sheetState = MailUiState.SheetState.ShowSheet(openMailResponse.mailDetail))
+                }
+            } else {
+                sendEvent(MailEvent.ShowToast("${openMailResponse.msg}"))
+            }
         }
     }
 

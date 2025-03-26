@@ -17,6 +17,7 @@ data class JianGeUiState(
     val viewState: ViewState = ViewState.Loading,
     val logs: List<String> = listOf(),
     val showBottomSheet: Boolean = false,
+    val isSpecial: Int = 0,
 ) {
 
     data class QueryState(
