@@ -3,6 +3,7 @@ package io.github.merlin.assistant.data.network.service
 import io.github.merlin.assistant.data.network.NetworkDataSource
 import io.github.merlin.assistant.data.network.response.BasicResponse
 import io.github.merlin.assistant.data.network.response.GetAwardResponse
+import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
 import javax.inject.Inject
 
@@ -76,6 +77,13 @@ class PotService @Inject constructor(
         params["op"] = "upgrade_slot"
         params["type"] = type
         return networkDataSource.request<PotResponse>("pot_world", params)
+    }
+
+    suspend fun queryMystery(): MysteryResponse {
+        val params = mapOf(
+            "op" to "query_mystery"
+        )
+        return networkDataSource.request<MysteryResponse>("pot_world", params)
     }
 
 }

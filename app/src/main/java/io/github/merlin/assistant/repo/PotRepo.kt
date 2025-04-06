@@ -1,13 +1,13 @@
 package io.github.merlin.assistant.repo
 
 import io.github.merlin.assistant.data.local.LocalDataSource
-import io.github.merlin.assistant.data.local.model.JewelSettings
 import io.github.merlin.assistant.data.local.model.PotSettings
-import io.github.merlin.assistant.data.network.response.BasicResponse
 import io.github.merlin.assistant.data.network.response.GetAwardResponse
+import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.data.network.service.PotService
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
@@ -17,13 +17,18 @@ class PotRepo @Inject constructor(
     private val json: Json,
 ) {
 
-    val potSettingsStateFlow = localDataSource.jewelSettingsFlow.map {
+    val potSettingsStateFlow = localDataSource.potSettingsFlow.map {
         it?.let { json.decodeFromString(it) } ?: PotSettings()
+    }
+
+    suspend fun setPotSettings(potSettings: PotSettings) {
+        localDataSource.setPotSettings(json.encodeToString(potSettings))
     }
 
     suspend fun index(): PotResponse {
         return potService.index()
     }
+
     suspend fun getAward(type: String): GetAwardResponse {
         return potService.getAward(type)
     }
@@ -48,7 +53,9 @@ class PotRepo @Inject constructor(
         return potService.equip(equipmentId)
     }
 
-    suspend fun upgradeSlot(type: String) : PotResponse {
+    suspend fun upgradeSlot(type: String): PotResponse {
         return potService.upgradeSlot(type)
     }
+
+    suspend fun queryMystery(): MysteryResponse = potService.queryMystery()
 }

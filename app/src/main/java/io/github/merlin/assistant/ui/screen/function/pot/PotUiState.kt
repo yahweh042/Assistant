@@ -1,14 +1,17 @@
 package io.github.merlin.assistant.ui.screen.function.pot
 
+import io.github.merlin.assistant.data.local.model.PotSettings
+import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.ui.base.ViewState
 
 data class PotUiState(
     val logs: List<String> = listOf(),
     val potDetailViewState: ViewState = ViewState.Loading,
-    val chooserDialogState: ChooserDialogState = ChooserDialogState.Hide,
+    val mysteryDialogState: MysteryDialogState = MysteryDialogState.Hide,
     val jobbing: Boolean = false,
     val showBottomSheet: Boolean = false,
+    val potSettings: PotSettings = PotSettings(),
 ) {
 
     data class PotDetailState(
@@ -47,10 +50,16 @@ data class PotUiState(
 
     }
 
-    sealed class ChooserDialogState {
-        data object Show : ChooserDialogState()
-        data object Hide : ChooserDialogState()
+    sealed class MysteryDialogState {
+        data class Show(
+            val curMysteryId: Int,
+            val mysteries: Map<Int, MysteryResponse.Mystery>,
+        ) : MysteryDialogState()
+
+        data object Hide : MysteryDialogState()
+        data object Loading : MysteryDialogState()
     }
+
 
 }
 

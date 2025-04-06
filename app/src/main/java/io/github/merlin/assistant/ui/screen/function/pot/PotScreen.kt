@@ -1,8 +1,9 @@
 package io.github.merlin.assistant.ui.screen.function.pot
 
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,43 +13,53 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.ui.base.AssistantDialog
-import io.github.merlin.assistant.ui.base.AssistantDropdownMenuField
 import io.github.merlin.assistant.ui.base.ErrorContent
 import io.github.merlin.assistant.ui.base.LaunchedEvent
 import io.github.merlin.assistant.ui.base.LogsBottomSheet
@@ -107,7 +118,7 @@ fun PotScreen(
                     paddingValues = paddingValues,
                     potDetailState = viewState.data as PotUiState.PotDetailState,
                     jobbing = state.jobbing,
-                    chooserDialogState = state.chooserDialogState,
+                    mysteryDialogState = state.mysteryDialogState,
                     onEquip = { viewModel.trySendAction(PotAction.Equip(it)) },
                     onDecompose = { viewModel.trySendAction(PotAction.Decompose(it)) },
                     onBeginAdventureJob = { viewModel.trySendAction(PotAction.BeginAdventureJob) },
@@ -118,8 +129,9 @@ fun PotScreen(
                         viewModel.trySendAction(PotAction.BeginChallengeBossJob(it))
                     },
                     onEndJob = { viewModel.trySendAction(PotAction.EndJob) },
-                    onShowChooserDialog = { viewModel.trySendAction(PotAction.ShowChooserDialog(it)) },
-                    onHideChooserDialog = { viewModel.trySendAction(PotAction.HideChooserDialog) },
+                    onShowMysteryDialog = { viewModel.trySendAction(PotAction.ShowMysteryDialog) },
+                    onHideMysteryDialog = { viewModel.trySendAction(PotAction.HideMysteryDialog) },
+                    onSwitchMystery = { viewModel.trySendAction(PotAction.SwitchMystery(it)) },
                     onGetAward = remember(viewModel) {
                         { viewModel.trySendAction(PotAction.GetAward(it)) }
                     },
@@ -153,15 +165,16 @@ fun PotDetailContent(
     paddingValues: PaddingValues,
     potDetailState: PotUiState.PotDetailState,
     jobbing: Boolean,
-    chooserDialogState: PotUiState.ChooserDialogState,
+    mysteryDialogState: PotUiState.MysteryDialogState,
     onEquip: (Int) -> Unit,
     onDecompose: (Int) -> Unit,
     onBeginAdventureJob: () -> Unit,
     onBeginChallengeLevelJob: (Int) -> Unit,
     onBeginChallengeBossJob: (Int) -> Unit,
     onEndJob: () -> Unit,
-    onShowChooserDialog: (Int) -> Unit,
-    onHideChooserDialog: () -> Unit,
+    onShowMysteryDialog: () -> Unit,
+    onHideMysteryDialog: () -> Unit,
+    onSwitchMystery: (mysteryId: Int) -> Unit,
     onGetAward: (String) -> Unit,
     onUpgradeSlot: (String) -> Unit,
 ) {
@@ -213,11 +226,13 @@ fun PotDetailContent(
                 }
             }
         }
-        Row(modifier = Modifier.padding(15.dp, 5.dp)) {
+        Row(
+            modifier = Modifier.padding(15.dp, 5.dp),
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
             Button(onClick = { onGetAward("0") }) {
                 Text(text = "领取")
             }
-            Spacer(modifier = Modifier.width(5.dp))
             if (jobbing) {
                 Button(onClick = onEndJob) {
                     Text(text = "停止")
@@ -226,13 +241,11 @@ fun PotDetailContent(
                 Button(onClick = onBeginAdventureJob) {
                     Text(text = "挑战")
                 }
-                Spacer(modifier = Modifier.width(5.dp))
                 Button(onClick = { onBeginChallengeLevelJob(potDetailState.levelId) }) {
                     Text(text = "闯关")
                 }
-                Spacer(modifier = Modifier.width(5.dp))
-                Button(onClick = { onShowChooserDialog(2) }) {
-                    Text(text = "首领")
+                Button(onClick = { onShowMysteryDialog() }) {
+                    Text(text = "秘境")
                 }
             }
         }
@@ -286,11 +299,11 @@ fun PotDetailContent(
                 )
             }
         }
-        ChooserBossDialog(
-            currentId = potDetailState.bossId,
-            chooserDialogState = chooserDialogState,
-            onChooserCancel = onHideChooserDialog,
-            onChooserConfirm = { onBeginChallengeBossJob(it) },
+        MysteryDialog(
+            state = mysteryDialogState,
+            onChooserCancel = onHideMysteryDialog,
+            onSwitchMystery = onSwitchMystery,
+            onChooserConfirm = onBeginChallengeBossJob,
         )
         if (potDetailState.showUndisposedDialog) {
             UndisposedDialog(
@@ -317,7 +330,6 @@ fun EquipmentPage(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AttrsPage(
     paddingValues: PaddingValues,
@@ -329,7 +341,7 @@ fun AttrsPage(
         contentPadding = paddingValues.innerPagePaddingValues()
     ) {
         addAttr?.let {
-            stickyHeader {
+            item {
                 Text(
                     text = "属性加成：${it}",
                     fontWeight = FontWeight.Bold
@@ -342,39 +354,89 @@ fun AttrsPage(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChooserBossDialog(
-    currentId: Int,
-    chooserDialogState: PotUiState.ChooserDialogState,
+fun MysteryDialog(
+    state: PotUiState.MysteryDialogState,
     onChooserCancel: () -> Unit,
-    onChooserConfirm: (chooserId: Int) -> Unit,
+    onSwitchMystery: (mysteryId: Int) -> Unit,
+    onChooserConfirm: (bossId: Int) -> Unit,
 ) {
 
-    var chooserId by remember { mutableIntStateOf(currentId) }
+    val configuration = LocalConfiguration.current
+    val dialogHeight = configuration.screenHeightDp.dp / 2
+    val dialogWidth = configuration.screenWidthDp.dp - 80.dp
 
-    when (chooserDialogState) {
-        PotUiState.ChooserDialogState.Hide -> Unit
-        is PotUiState.ChooserDialogState.Show -> AssistantDialog(
+    val bosses =
+        if (state is PotUiState.MysteryDialogState.Show) state.mysteries[state.curMysteryId]?.bosses
+            ?: listOf() else listOf()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(bosses) {
+        if (bosses.isNotEmpty()) {
+            listState.animateScrollToItem(bosses.indexOfFirst { !it.pass })
+        }
+    }
+
+    when (state) {
+        PotUiState.MysteryDialogState.Hide -> Unit
+        PotUiState.MysteryDialogState.Loading -> Dialog(onDismissRequest = {}) { CircularProgressIndicator() }
+        is PotUiState.MysteryDialogState.Show -> BasicAlertDialog(
             onDismissRequest = { onChooserCancel() },
-            confirmButton = {
-                TextButton(onClick = { onChooserConfirm(chooserId) }) {
-                    Text(text = "确定")
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+            ),
+            modifier = Modifier.widthIn(max = dialogWidth),
+        ) {
+            Surface(
+                shape = ShapeDefaults.Medium,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Column(
+                    modifier = Modifier.padding(15.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Row {
+                        state.mysteries.values.forEach { mystery ->
+                            TextButton(
+                                onClick = { onSwitchMystery(mystery.mysteryId) },
+                                colors = if (state.curMysteryId == mystery.mysteryId) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
+                            ) {
+                                Text(text = mystery.name)
+                            }
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(onClick = onChooserCancel) {
+                            Icon(imageVector = Icons.Rounded.Close, contentDescription = "")
+                        }
+                    }
+                    Surface(shape = ShapeDefaults.Medium) {
+                        LazyColumn(
+                            modifier = Modifier.height(dialogHeight),
+                            state = listState,
+                        ) {
+                            items(bosses) { boss ->
+                                ListItem(
+                                    headlineContent = { Text(text = "[${boss.bossId}] ${boss.name}") },
+                                    supportingContent = { Text(text = boss.desc) },
+                                    trailingContent = {
+                                        Text(
+                                            text = when {
+                                                boss.pass -> "已通关"
+                                                else -> "${boss.unlock}级解锁"
+                                            }
+                                        )
+                                    },
+                                    modifier = Modifier.clickable {
+                                        onChooserConfirm(boss.bossId)
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = onChooserCancel) {
-                    Text(text = "取消")
-                }
-            },
-            title = { Text(text = "选择关卡") },
-            text = {
-                AssistantDropdownMenuField(
-                    value = chooserId.toString(),
-                    onValueChange = { chooserId = it.toInt() },
-                    options = IntRange(1, 10).map { it.toString() },
-                )
             }
-        )
+        }
     }
 
 }

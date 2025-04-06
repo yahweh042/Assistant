@@ -2,10 +2,13 @@ package io.github.merlin.assistant.ui.screen.function.pot
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.repo.PotRepo
 import io.github.merlin.assistant.ui.base.AbstractViewModel
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
@@ -24,6 +27,13 @@ class PotViewModel @Inject constructor(
 
     init {
         receivePotIndex()
+        receivePotSettings()
+    }
+
+    private fun receivePotSettings() {
+        potRepo.potSettingsStateFlow
+            .onEach { settings -> mutableStateFlow.update { it.copy(potSettings = settings) } }
+            .launchIn(viewModelScope)
     }
 
     override fun handleAction(action: PotAction) {
@@ -33,13 +43,25 @@ class PotViewModel @Inject constructor(
             PotAction.EndJob -> handleEndJob()
             PotAction.RefreshPotInfo -> receivePotIndex()
             PotAction.BeginAdventureJob -> handleBeginAdventure()
-            PotAction.HideChooserDialog -> handleHideChooserDialog()
-            is PotAction.ShowChooserDialog -> handleShowChooserDialog()
+            PotAction.HideMysteryDialog -> handleHideMysteryDialog()
+            PotAction.ShowMysteryDialog -> handleShowMysteryDialog()
+            is PotAction.SwitchMystery -> handleSwitchMystery(action)
             is PotAction.Decompose -> handleDecompose(action)
             is PotAction.Equip -> handleEquip(action)
             is PotAction.GetAward -> handleGetAward(action)
             is PotAction.UpgradeSlot -> handleUpgradeSlot(action)
             PotAction.HideBottomSheet -> handleHideBottomSheet()
+        }
+    }
+
+    private fun handleSwitchMystery(action: PotAction.SwitchMystery) {
+        when (val mysteryDialogState = state.mysteryDialogState) {
+            is PotUiState.MysteryDialogState.Show -> mutableStateFlow.update {
+                it.copy(mysteryDialogState = mysteryDialogState.copy(curMysteryId = action.mysteryId))
+            }
+
+            else -> Unit
+
         }
     }
 
@@ -141,7 +163,7 @@ class PotViewModel @Inject constructor(
             mutableStateFlow.update {
                 it.copy(
                     jobbing = true,
-                    chooserDialogState = PotUiState.ChooserDialogState.Hide,
+                    mysteryDialogState = PotUiState.MysteryDialogState.Hide,
                     logs = listOf(),
                     showBottomSheet = true,
                 )
@@ -178,15 +200,34 @@ class PotViewModel @Inject constructor(
         }
     }
 
-    private fun handleHideChooserDialog() {
+    private fun handleHideMysteryDialog() {
         mutableStateFlow.update {
-            it.copy(chooserDialogState = PotUiState.ChooserDialogState.Hide)
+            it.copy(mysteryDialogState = PotUiState.MysteryDialogState.Hide)
         }
     }
 
-    private fun handleShowChooserDialog() {
-        mutableStateFlow.update {
-            it.copy(chooserDialogState = PotUiState.ChooserDialogState.Show)
+    private fun handleShowMysteryDialog() {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(mysteryDialogState = PotUiState.MysteryDialogState.Loading)
+            }
+            val mysteryResponse = potRepo.queryMystery()
+            if (mysteryResponse.result != 0) {
+                mutableStateFlow.update {
+                    it.copy(mysteryDialogState = PotUiState.MysteryDialogState.Hide)
+                }
+                sendEvent(PotEvent.ShowToast("${mysteryResponse.msg}"))
+                return@launch
+            }
+            val map = mysteryResponse.mysteries.associateBy { it.mysteryId }
+            mutableStateFlow.update {
+                it.copy(
+                    mysteryDialogState = PotUiState.MysteryDialogState.Show(
+                        curMysteryId = map.firstNotNullOf { entry -> entry.key },
+                        mysteries = map,
+                    )
+                )
+            }
         }
     }
 
@@ -258,8 +299,7 @@ class PotViewModel @Inject constructor(
                 }
                 if (adventureResponse.undisposed?.isNotEmpty() == true) {
                     val undisposed = adventureResponse.undisposed[0]
-                    val equipped = undisposed.equipped
-                    if (undisposed.point < equipped?.point ?: 0) {
+                    if (shouldDecomposeEquip(undisposed)) {
                         val decomposeResult = potRepo.decompose(undisposed.equipmentId)
                         if (decomposeResult.result == 0) {
                             mutableStateFlow.update {
@@ -286,6 +326,21 @@ class PotViewModel @Inject constructor(
             }
             mutableStateFlow.update { it.copy(jobbing = false) }
         }
+    }
+
+    private fun shouldDecomposeEquip(undisposed: PotResponse.Equipment): Boolean {
+        val potSettings = state.potSettings
+        if (!potSettings.attrFilter) {
+            return false
+        }
+        // val equiped = undisposed.equipped
+        val subAttrs = undisposed.subAttrs
+        for (attr in potSettings.attrs.split(",")) {
+            if (subAttrs.contains(attr)) {
+                return false
+            }
+        }
+        return true
     }
 
     private fun handleEndJob() {

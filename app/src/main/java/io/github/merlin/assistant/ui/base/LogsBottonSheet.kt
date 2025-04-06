@@ -62,6 +62,7 @@ fun LogsBottomSheet(
     }
 
     val configuration = LocalConfiguration.current
+    val sheetHeight = configuration.screenHeightDp.dp / 2
 
     if (showBottomSheet) {
         ModalBottomSheet(
@@ -72,7 +73,7 @@ fun LogsBottomSheet(
             LazyColumn(
                 state = lazyListState,
                 modifier = Modifier
-                    .heightIn(min = 0.dp, max = configuration.screenHeightDp.dp / 2)
+                    .heightIn(min = sheetHeight, max = sheetHeight)
                     .fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = 15.dp,

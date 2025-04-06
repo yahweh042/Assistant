@@ -1,7 +1,8 @@
 package io.github.merlin.assistant.ui.base
 
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -21,10 +22,11 @@ fun AssistantDialog(
     val configuration = LocalConfiguration.current
 
     AlertDialog(
+        shape = ShapeDefaults.Medium,
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
         ),
-        modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - 80.dp),
+        modifier = Modifier.width(configuration.screenWidthDp.dp - 80.dp),
         onDismissRequest = onDismissRequest,
         confirmButton = confirmButton,
         dismissButton = dismissButton,

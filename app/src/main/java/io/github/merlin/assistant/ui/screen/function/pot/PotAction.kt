@@ -6,8 +6,9 @@ sealed class PotAction {
     data object BeginAdventureJob : PotAction()
     data object EndJob : PotAction()
     data object RefreshPotInfo : PotAction()
-    data class ShowChooserDialog(val type: Int) : PotAction()
-    data object HideChooserDialog : PotAction()
+    data object ShowMysteryDialog : PotAction()
+    data object HideMysteryDialog : PotAction()
+    data class SwitchMystery(val mysteryId: Int): PotAction()
     data object HideBottomSheet : PotAction()
 
     data class Equip(val equipmentId: Int) : PotAction()

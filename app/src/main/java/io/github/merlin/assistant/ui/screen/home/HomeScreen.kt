@@ -7,16 +7,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -63,6 +65,7 @@ fun HomeScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             AccountCard(
                 account = state.account,
@@ -70,68 +73,56 @@ fun HomeScreen(
                     viewModel.trySendAction(HomeAction.AccountCardClick)
                 },
             )
-            LazyColumn {
-                item {
-                    ListItem(
-                        modifier = Modifier.clickable { navController.navigateToJewel() },
-                        headlineContent = { Text(text = "矿山争夺") },
-                        trailingContent = {
-                            Image(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = ""
-                            )
-                        },
+            ListItem(
+                modifier = Modifier.clickable { navController.navigateToJewel() },
+                headlineContent = { Text(text = "矿山争夺") },
+                trailingContent = {
+                    Image(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = ""
                     )
-                }
-                item {
-                    ListItem(
-                        modifier = Modifier.clickable { navController.navigateToPot() },
-                        headlineContent = { Text(text = "壶中天地") },
-                        trailingContent = {
-                            Image(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = ""
-                            )
-                        },
+                },
+            )
+            ListItem(
+                modifier = Modifier.clickable { navController.navigateToPot() },
+                headlineContent = { Text(text = "壶中天地") },
+                trailingContent = {
+                    Image(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = ""
                     )
-                }
-                item {
-                    ListItem(
-                        modifier = Modifier.clickable { navController.navigateToJianGe() },
-                        headlineContent = { Text(text = "剑阁秘境") },
-                        trailingContent = {
-                            Image(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = ""
-                            )
-                        },
+                },
+            )
+            ListItem(
+                modifier = Modifier.clickable { navController.navigateToJianGe() },
+                headlineContent = { Text(text = "剑阁秘境") },
+                trailingContent = {
+                    Image(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = ""
                     )
-                }
-                item {
-                    ListItem(
-                        modifier = Modifier.clickable { navController.navigateToShop() },
-                        headlineContent = { Text(text = "杂货铺") },
-                        trailingContent = {
-                            Image(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = ""
-                            )
-                        },
+                },
+            )
+            ListItem(
+                modifier = Modifier.clickable { navController.navigateToShop() },
+                headlineContent = { Text(text = "杂货铺") },
+                trailingContent = {
+                    Image(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = ""
                     )
-                }
-                item {
-                    ListItem(
-                        modifier = Modifier.clickable { navController.navigateToMail() },
-                        headlineContent = { Text(text = "邮箱") },
-                        trailingContent = {
-                            Image(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = ""
-                            )
-                        },
+                },
+            )
+            ListItem(
+                modifier = Modifier.clickable { navController.navigateToMail() },
+                headlineContent = { Text(text = "邮箱") },
+                trailingContent = {
+                    Image(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = ""
                     )
-                }
-            }
+                },
+            )
         }
     }
 }
@@ -142,7 +133,9 @@ fun AccountCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    ElevatedCard(
+    Surface(
+        shape = ShapeDefaults.Medium,
+        tonalElevation = 5.dp,
         modifier = modifier
             .fillMaxWidth()
             .padding(15.dp, 5.dp),

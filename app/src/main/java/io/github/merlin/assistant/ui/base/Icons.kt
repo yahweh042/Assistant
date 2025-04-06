@@ -14,7 +14,7 @@ fun GoodsIcon(
 ) {
     SubcomposeAsyncImage(
         model = "https://res.ledou.qq.com/ledoures/goods/${iconId}.png",
-        loading = { CircularProgressIndicator() },
+        loading = { CircularProgressIndicator(modifier = Modifier.size(size.dp)) },
         contentDescription = null,
         modifier = Modifier.size(size.dp),
     )
