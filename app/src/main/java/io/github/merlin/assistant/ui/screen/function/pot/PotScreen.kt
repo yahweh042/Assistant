@@ -374,7 +374,11 @@ fun MysteryDialog(
 
     LaunchedEffect(bosses) {
         if (bosses.isNotEmpty()) {
-            listState.animateScrollToItem(bosses.indexOfFirst { !it.pass })
+            var index = bosses.indexOfFirst { !it.pass }
+            if (index > 1) {
+                index -= 1
+            }
+            listState.animateScrollToItem(index)
         }
     }
 

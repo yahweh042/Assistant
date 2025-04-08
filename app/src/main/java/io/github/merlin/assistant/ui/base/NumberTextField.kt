@@ -8,6 +8,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.KeyboardDoubleArrowLeft
+import androidx.compose.material.icons.rounded.KeyboardDoubleArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -18,19 +20,20 @@ import androidx.core.text.isDigitsOnly
 
 @Composable
 fun NumberTextField(
+    modifier: Modifier = Modifier,
     value: Int,
     onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
+    maxValue: Int = 100,
 ) {
 
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = { onValueChange(0) }) {
+            Icon(imageVector = Icons.Rounded.KeyboardDoubleArrowLeft, contentDescription = "")
+        }
         IconButton(
             onClick = { onValueChange(value - 1) },
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                contentDescription = ""
-            )
+            Icon(imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "")
         }
         BasicTextField(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -49,11 +52,14 @@ fun NumberTextField(
         IconButton(
             onClick = { onValueChange(value + 1) },
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                contentDescription = ""
-            )
+            Icon(imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = "")
         }
+        IconButton(
+            onClick = { onValueChange(maxValue) },
+        ) {
+            Icon(imageVector = Icons.Rounded.KeyboardDoubleArrowRight, contentDescription = "")
+        }
+
     }
 
 }

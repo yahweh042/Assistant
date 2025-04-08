@@ -8,6 +8,7 @@ data class MailUiState(
     val type: Int = 2,
     val viewState: ViewState = ViewState.Loading,
     val sheetState: SheetState = SheetState.HideSheet,
+    val operateLoading: Boolean = false,
 ) {
 
     data class MailState(

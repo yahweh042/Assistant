@@ -29,13 +29,7 @@ class MailViewModel @Inject constructor(
             val mailResponse = mailService.queryMails(type)
             if (mailResponse.result == 0) {
                 mutableStateFlow.update {
-                    it.copy(
-                        viewState = ViewState.Success(
-                            MailUiState.MailState(
-                                mailResponse.mails
-                            )
-                        )
-                    )
+                    it.copy(viewState = ViewState.Success(MailUiState.MailState(mailResponse.mails)))
                 }
             } else {
                 mutableStateFlow.update {
@@ -63,7 +57,9 @@ class MailViewModel @Inject constructor(
 
     private fun openMail(id: Int) {
         viewModelScope.launch {
+            mutableStateFlow.update { it.copy(operateLoading = true) }
             val openMailResponse = mailService.openMail(id)
+            mutableStateFlow.update { it.copy(operateLoading = false) }
             if (openMailResponse.result == 0) {
                 mutableStateFlow.update {
                     it.copy(sheetState = MailUiState.SheetState.ShowSheet(openMailResponse.mailDetail))

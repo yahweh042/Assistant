@@ -1,14 +1,13 @@
 package io.github.merlin.assistant.ui.screen.function.shop.page
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
@@ -95,19 +94,17 @@ fun ShopPage(
                 }
             }
         ) {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
                     text = "描述",
                     fontSize = 16.sp,
                     color = Color.Black,
-                    modifier = Modifier.padding(vertical = 3.dp),
                 )
                 Text(text = dialogState.commodityInfo.goodsDes)
                 Text(
                     text = "使用",
                     fontSize = 16.sp,
                     color = Color.Black,
-                    modifier = Modifier.padding(vertical = 3.dp),
                 )
                 Text(text = dialogState.commodityInfo.goodsEffect)
                 Text(text = "库存: ${dialogState.commodityInfo.remain}")
@@ -117,19 +114,16 @@ fun ShopPage(
                         text = "数量",
                         fontSize = 16.sp,
                         color = Color.Black,
-                        modifier = Modifier.padding(vertical = 3.dp),
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     NumberTextField(
                         value = dialogState.num,
                         onValueChange = {
                             viewModel.trySendAction(
-                                ShopPageAction.UpdateGoodsNum(
-                                    dialogState.commodityInfo,
-                                    it
-                                )
+                                ShopPageAction.UpdateGoodsNum(dialogState.commodityInfo, it)
                             )
-                        }
+                        },
+                        maxValue = dialogState.commodityInfo.maxNum,
                     )
                 }
             }

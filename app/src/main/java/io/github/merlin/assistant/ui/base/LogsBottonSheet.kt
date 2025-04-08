@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -67,8 +68,10 @@ fun LogsBottomSheet(
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             contentWindowInsets = { BottomSheetDefaults.windowInsets.only(WindowInsetsSides.Horizontal) },
             dragHandle = { DragHandle(onDismissRequest = animateToDismiss) },
+            shape = ShapeDefaults.Medium,
         ) {
             LazyColumn(
                 state = lazyListState,
@@ -92,7 +95,7 @@ fun LogsBottomSheet(
 
 @Composable
 fun DragHandle(onDismissRequest: () -> Unit) {
-    Row(modifier = Modifier.padding(22.dp)) {
+    Row(modifier = Modifier.padding(20.dp)) {
         Column(modifier = Modifier.weight(1.0f)) {
             Text(text = "运行日志")
         }
