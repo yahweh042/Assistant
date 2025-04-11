@@ -1,8 +1,8 @@
 package io.github.merlin.assistant.ui.base
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
@@ -95,11 +95,10 @@ fun LogsBottomSheet(
 
 @Composable
 fun DragHandle(onDismissRequest: () -> Unit) {
-    Row(modifier = Modifier.padding(20.dp)) {
-        Column(modifier = Modifier.weight(1.0f)) {
-            Text(text = "运行日志")
-        }
-        IconButton(onClick = onDismissRequest, modifier = Modifier.size(20.dp)) {
+    Row(modifier = Modifier.padding(top = 10.dp, start = 15.dp, bottom = 5.dp, end = 15.dp)) {
+        Text(text = "运行日志")
+        Spacer(modifier = Modifier.weight(1f))
+        IconButton(onClick = onDismissRequest, modifier = Modifier.size(18.dp)) {
             Icon(
                 imageVector = Icons.Rounded.Close,
                 contentDescription = "",

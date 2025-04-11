@@ -31,12 +31,58 @@ class AccountViewModel @Inject constructor(
         when (action) {
             AccountAction.AddAccountButtonClick -> handleAddAccountButtonClick()
             is AccountAction.SwitchAccountClick -> handleSwitchAccountClick(action)
+            is AccountAction.EditAccount -> handleEditAccount(action)
+            is AccountAction.ChangeToken -> handleChangeToken(action)
+            AccountAction.UpdateToken -> handleUpdateToken(action)
+            AccountAction.HideEditAccountDialog -> handleHideEditAccountDialog()
+        }
+    }
+
+    private fun handleHideEditAccountDialog() {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(editAccountDialogState = AccountUiState.EditAccountDialogState.Hide)
+            }
+        }
+    }
+
+    private fun handleUpdateToken(action: AccountAction) {
+        viewModelScope.launch {
+            val dialogState = state.editAccountDialogState
+            when (dialogState) {
+                AccountUiState.EditAccountDialogState.Hide -> Unit
+                is AccountUiState.EditAccountDialogState.Show -> {
+                    accountRepo.insertAccount(dialogState.account)
+                }
+            }
+        }
+    }
+
+    private fun handleChangeToken(action: AccountAction.ChangeToken) {
+        viewModelScope.launch {
+            val dialogState = state.editAccountDialogState
+            when (dialogState) {
+                AccountUiState.EditAccountDialogState.Hide -> Unit
+                is AccountUiState.EditAccountDialogState.Show -> mutableStateFlow.update {
+                    it.copy(
+                        editAccountDialogState = AccountUiState.EditAccountDialogState.Show(
+                            dialogState.account.copy(token = action.token)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun handleEditAccount(account: AccountAction.EditAccount) {
+        mutableStateFlow.update {
+            it.copy(editAccountDialogState = AccountUiState.EditAccountDialogState.Show(account.account))
         }
     }
 
     private fun handleSwitchAccountClick(action: AccountAction.SwitchAccountClick) {
         viewModelScope.launch {
-            when(val switchResult = accountRepo.switchAccount(action.uid)) {
+            when (val switchResult = accountRepo.switchAccount(action.uid)) {
                 SwitchAccountResult.Switched -> sendEvent(AccountEvent.ShowToast("切换成功"))
                 SwitchAccountResult.NoChange -> {}
                 is SwitchAccountResult.SwitchError -> sendEvent(AccountEvent.ShowToast(switchResult.msg))

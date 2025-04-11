@@ -126,7 +126,8 @@ class PotViewModel @Inject constructor(
                 mutableStateFlow.update {
                     it.copy(
                         potDetailViewState = ViewState.Success(equipResult.toPotInfo()),
-                        logs = it.logs.plus("装备 ${equipResult.msg}")
+                        logs = it.logs.plus("装备 ${equipResult.msg}"),
+                        undisposedDialogState = PotUiState.UndisposedDialogState.Hide,
                     )
                 }
             } else {
@@ -142,16 +143,13 @@ class PotViewModel @Inject constructor(
                 mutableStateFlow.update {
                     it.copy(
                         potDetailViewState = ViewState.Success(decomposeResult.toPotInfo()),
-                        logs = it.logs.plus("分解 ${decomposeResult.msg}")
+                        logs = it.logs.plus("分解 ${decomposeResult.msg}"),
+                        undisposedDialogState = PotUiState.UndisposedDialogState.Hide,
                     )
                 }
             } else {
                 mutableStateFlow.update {
-                    it.copy(
-                        potDetailViewState = ViewState.Error(
-                            decomposeResult.msg
-                        )
-                    )
+                    it.copy(potDetailViewState = ViewState.Error(decomposeResult.msg))
                 }
             }
         }
@@ -186,7 +184,12 @@ class PotViewModel @Inject constructor(
                     }
                     if (challengeResponse.undisposed?.isNotEmpty() == true) {
                         mutableStateFlow.update {
-                            it.copy(logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"))
+                            it.copy(
+                                logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"),
+                                undisposedDialogState = PotUiState.UndisposedDialogState.Show(
+                                    challengeResponse.undisposed[0]
+                                )
+                            )
                         }
                         break
                     }
@@ -260,7 +263,12 @@ class PotViewModel @Inject constructor(
                     }
                     if (challengeResponse.undisposed?.isNotEmpty() == true) {
                         mutableStateFlow.update {
-                            it.copy(logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"))
+                            it.copy(
+                                logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"),
+                                undisposedDialogState = PotUiState.UndisposedDialogState.Show(
+                                    challengeResponse.undisposed[0]
+                                ),
+                            )
                         }
                         break
                     }
@@ -318,6 +326,9 @@ class PotViewModel @Inject constructor(
                             it.copy(
                                 potDetailViewState = ViewState.Success(adventureResponse.toPotInfo()),
                                 logs = it.logs.plus("请处理装备 ${undisposed.name}"),
+                                undisposedDialogState = PotUiState.UndisposedDialogState.Show(
+                                    undisposed
+                                )
                             )
                         }
                         break

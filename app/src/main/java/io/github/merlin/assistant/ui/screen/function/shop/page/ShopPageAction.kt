@@ -12,4 +12,6 @@ sealed class ShopPageAction {
 
     data class UpdateGoodsNum(val commodityInfo: CommodityInfo, val num: Int) : ShopPageAction()
 
+    data class BuyGoods(val shopType: String, val commodityInfo: CommodityInfo, val num: Int): ShopPageAction()
+
 }

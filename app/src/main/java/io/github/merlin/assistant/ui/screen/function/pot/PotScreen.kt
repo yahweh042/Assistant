@@ -53,7 +53,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,6 +64,7 @@ import io.github.merlin.assistant.ui.base.LaunchedEvent
 import io.github.merlin.assistant.ui.base.LogsBottomSheet
 import io.github.merlin.assistant.ui.base.PagerTabIndicator
 import io.github.merlin.assistant.ui.base.ViewState
+import io.github.merlin.assistant.ui.screen.function.pot.arena.navigateToArena
 import io.github.merlin.assistant.ui.screen.function.pot.settings.navigateToPotSettings
 import kotlinx.coroutines.launch
 
@@ -98,6 +98,9 @@ fun PotScreen(
                     }
                 },
                 actions = {
+                    TextButton(onClick = { navController.navigateToArena() }) {
+                        Text(text = "竞技场")
+                    }
                     IconButton(onClick = { navController.navigateToPotSettings() }) {
                         Image(
                             imageVector = Icons.Default.Settings,
@@ -118,20 +121,12 @@ fun PotScreen(
                     paddingValues = paddingValues,
                     potDetailState = viewState.data as PotUiState.PotDetailState,
                     jobbing = state.jobbing,
-                    mysteryDialogState = state.mysteryDialogState,
-                    onEquip = { viewModel.trySendAction(PotAction.Equip(it)) },
-                    onDecompose = { viewModel.trySendAction(PotAction.Decompose(it)) },
                     onBeginAdventureJob = { viewModel.trySendAction(PotAction.BeginAdventureJob) },
                     onBeginChallengeLevelJob = {
                         viewModel.trySendAction(PotAction.BeginChallengeLevelJob(it))
                     },
-                    onBeginChallengeBossJob = {
-                        viewModel.trySendAction(PotAction.BeginChallengeBossJob(it))
-                    },
                     onEndJob = { viewModel.trySendAction(PotAction.EndJob) },
                     onShowMysteryDialog = { viewModel.trySendAction(PotAction.ShowMysteryDialog) },
-                    onHideMysteryDialog = { viewModel.trySendAction(PotAction.HideMysteryDialog) },
-                    onSwitchMystery = { viewModel.trySendAction(PotAction.SwitchMystery(it)) },
                     onGetAward = remember(viewModel) {
                         { viewModel.trySendAction(PotAction.GetAward(it)) }
                     },
@@ -147,6 +142,17 @@ fun PotScreen(
             }
 
         }
+        UndisposedDialog(
+            state = state.undisposedDialogState,
+            onEquip = { viewModel.trySendAction(PotAction.Equip(it)) },
+            onDecompose = { viewModel.trySendAction(PotAction.Decompose(it)) },
+        )
+        MysteryDialog(
+            state = state.mysteryDialogState,
+            onHideMysteryDialog = { viewModel.trySendAction(PotAction.HideMysteryDialog) },
+            onSwitchMystery = { viewModel.trySendAction(PotAction.SwitchMystery(it)) },
+            onBeginChallengeBossJob = { viewModel.trySendAction(PotAction.BeginChallengeBossJob(it)) },
+        )
         LogsBottomSheet(
             logs = state.logs,
             showBottomSheet = state.showBottomSheet,
@@ -165,16 +171,10 @@ fun PotDetailContent(
     paddingValues: PaddingValues,
     potDetailState: PotUiState.PotDetailState,
     jobbing: Boolean,
-    mysteryDialogState: PotUiState.MysteryDialogState,
-    onEquip: (Int) -> Unit,
-    onDecompose: (Int) -> Unit,
     onBeginAdventureJob: () -> Unit,
     onBeginChallengeLevelJob: (Int) -> Unit,
-    onBeginChallengeBossJob: (Int) -> Unit,
     onEndJob: () -> Unit,
     onShowMysteryDialog: () -> Unit,
-    onHideMysteryDialog: () -> Unit,
-    onSwitchMystery: (mysteryId: Int) -> Unit,
     onGetAward: (String) -> Unit,
     onUpgradeSlot: (String) -> Unit,
 ) {
@@ -299,19 +299,6 @@ fun PotDetailContent(
                 )
             }
         }
-        MysteryDialog(
-            state = mysteryDialogState,
-            onChooserCancel = onHideMysteryDialog,
-            onSwitchMystery = onSwitchMystery,
-            onChooserConfirm = onBeginChallengeBossJob,
-        )
-        if (potDetailState.showUndisposedDialog) {
-            UndisposedDialog(
-                undisposed = potDetailState.undisposed[0],
-                onEquip = onEquip,
-                onDecompose = onDecompose,
-            )
-        }
     }
 }
 
@@ -358,9 +345,9 @@ fun AttrsPage(
 @Composable
 fun MysteryDialog(
     state: PotUiState.MysteryDialogState,
-    onChooserCancel: () -> Unit,
+    onHideMysteryDialog: () -> Unit,
     onSwitchMystery: (mysteryId: Int) -> Unit,
-    onChooserConfirm: (bossId: Int) -> Unit,
+    onBeginChallengeBossJob: (bossId: Int) -> Unit,
 ) {
 
     val configuration = LocalConfiguration.current
@@ -384,9 +371,15 @@ fun MysteryDialog(
 
     when (state) {
         PotUiState.MysteryDialogState.Hide -> Unit
-        PotUiState.MysteryDialogState.Loading -> Dialog(onDismissRequest = {}) { CircularProgressIndicator() }
+        PotUiState.MysteryDialogState.Loading -> Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+
         is PotUiState.MysteryDialogState.Show -> BasicAlertDialog(
-            onDismissRequest = { onChooserCancel() },
+            onDismissRequest = { onHideMysteryDialog() },
             properties = DialogProperties(
                 usePlatformDefaultWidth = false,
             ),
@@ -410,7 +403,7 @@ fun MysteryDialog(
                             }
                         }
                         Spacer(modifier = Modifier.weight(1f))
-                        IconButton(onClick = onChooserCancel) {
+                        IconButton(onClick = onHideMysteryDialog) {
                             Icon(imageVector = Icons.Rounded.Close, contentDescription = "")
                         }
                     }
@@ -432,7 +425,7 @@ fun MysteryDialog(
                                         )
                                     },
                                     modifier = Modifier.clickable {
-                                        onChooserConfirm(boss.bossId)
+                                        onBeginChallengeBossJob(boss.bossId)
                                     }
                                 )
                             }
@@ -447,34 +440,38 @@ fun MysteryDialog(
 
 @Composable
 fun UndisposedDialog(
-    undisposed: PotResponse.Equipment,
+    state: PotUiState.UndisposedDialogState,
     onEquip: (equipmentId: Int) -> Unit,
     onDecompose: (equipmentId: Int) -> Unit,
 ) {
 
-    AssistantDialog(
-        onDismissRequest = { },
-        confirmButton = {
-            TextButton(onClick = { onEquip(undisposed.equipmentId) }) {
-                Text(text = "装备")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { onDecompose(undisposed.equipmentId) }) {
-                Text(text = "分解")
-            }
-        },
-        title = { Text(text = "选择装备") },
-        text = {
-            Column {
-                EquipmentCard(equipment = undisposed)
-                Text(text = "当前装备", fontWeight = FontWeight.Bold)
-                undisposed.equipped?.let { equipment ->
-                    EquipmentCard(equipment = equipment)
+    when (state) {
+        is PotUiState.UndisposedDialogState.Hide -> Unit
+        is PotUiState.UndisposedDialogState.Show -> AssistantDialog(
+            onDismissRequest = { },
+            confirmButton = {
+                TextButton(onClick = { onEquip(state.undisposed.equipmentId) }) {
+                    Text(text = "装备")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onDecompose(state.undisposed.equipmentId) }) {
+                    Text(text = "分解")
+                }
+            },
+            title = { Text(text = "选择装备") },
+            text = {
+                Column {
+                    EquipmentCard(equipment = state.undisposed)
+                    Text(text = "当前装备", fontWeight = FontWeight.Bold)
+                    state.undisposed.equipped?.let { equipment ->
+                        EquipmentCard(equipment = equipment)
+                    }
                 }
             }
-        }
-    )
+        )
+    }
+
 }
 
 @Composable

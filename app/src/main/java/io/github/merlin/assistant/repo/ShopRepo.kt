@@ -33,4 +33,6 @@ class ShopRepo @Inject constructor(
     suspend fun viewShop(type: String): ShopResponse {
         return shopService.viewShop(type)
     }
+
+    suspend fun buy(id: Int, subtype: Int, num: Int, price: Int) = shopService.buy(id, subtype, num, price)
 }

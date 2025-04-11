@@ -1,17 +1,19 @@
 package io.github.merlin.assistant.ui.screen.function.shop.page
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +33,7 @@ import io.github.merlin.assistant.ui.base.ErrorContent
 import io.github.merlin.assistant.ui.base.GoodsIcon
 import io.github.merlin.assistant.ui.base.LoadingContent
 import io.github.merlin.assistant.ui.base.NumberTextField
+import io.github.merlin.assistant.ui.base.ShopIcon
 import io.github.merlin.assistant.ui.base.ViewState
 
 @Composable
@@ -53,6 +56,7 @@ fun ShopPage(
 
         is ViewState.Success<*> -> ShopPageContent(
             state = viewState.data as ShopPageUiState.ContentState,
+            shopType = shopType,
             contentPadding = contentPadding,
             showDialog = {
                 viewModel.trySendAction(ShopPageAction.ShowDialog(it))
@@ -72,7 +76,17 @@ fun ShopPage(
                 viewModel.trySendAction(ShopPageAction.HideDialog)
             },
             confirmButton = {
-                TextButton(onClick = {}) {
+                TextButton(
+                    onClick = {
+                        viewModel.trySendAction(
+                            ShopPageAction.BuyGoods(
+                                shopType = shopType,
+                                commodityInfo = dialogState.commodityInfo,
+                                num = dialogState.num,
+                            )
+                        )
+                    },
+                ) {
                     Text(text = "购买")
                 }
             },
@@ -135,12 +149,22 @@ fun ShopPage(
 @Composable
 fun ShopPageContent(
     state: ShopPageUiState.ContentState,
+    shopType: String,
     contentPadding: PaddingValues,
-    showDialog: ((CommodityInfo) -> Unit)?,
+    showDialog: (CommodityInfo) -> Unit,
 ) {
-    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = contentPadding) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
+        contentPadding = contentPadding,
+        modifier = Modifier.padding(horizontal = 15.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+
+
         items(state.commodityInfo, key = { it.id }) { item ->
             ShopGoodsItem(
+                shopType = shopType,
                 commodityInfo = item,
                 showDialog = showDialog,
             )
@@ -150,15 +174,29 @@ fun ShopPageContent(
 
 @Composable
 fun ShopGoodsItem(
+    shopType: String,
     commodityInfo: CommodityInfo,
-    showDialog: ((CommodityInfo) -> Unit)? = null,
+    showDialog: (CommodityInfo) -> Unit,
 ) {
-    ListItem(
-        modifier = Modifier.clickable { showDialog?.invoke(commodityInfo) },
-        leadingContent = { GoodsIcon(iconId = commodityInfo.iconId) },
-        headlineContent = { Text(text = commodityInfo.name) },
-        supportingContent = {
-            Text(text = "剩余: ${commodityInfo.remain} | 价格: ${commodityInfo.price}")
+    OutlinedCard(shape = ShapeDefaults.ExtraSmall) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+        ) {
+            GoodsIcon(iconId = commodityInfo.iconId)
+            Text(text = commodityInfo.name, softWrap = false)
+            Text(text = "剩余: ${commodityInfo.remain}")
+            FilledTonalButton(
+                onClick = { showDialog(commodityInfo) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = ShapeDefaults.ExtraSmall,
+            ) {
+                ShopIcon(id = shopType)
+                Spacer(modifier = Modifier.padding(horizontal = 5.dp))
+                Text(text = "${commodityInfo.price}")
+            }
         }
-    )
+    }
 }

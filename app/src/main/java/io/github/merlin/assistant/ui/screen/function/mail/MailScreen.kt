@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -141,9 +141,12 @@ fun MailContent(
             ListItem(
                 headlineContent = { Text(text = mail.title) },
                 supportingContent = { Text(text = mail.sender) },
-                trailingContent = { Text(text = mail.time) },
+                trailingContent = { Text(text = mail.formatTime) },
                 leadingContent = {
-                    Icon(imageVector = Icons.Default.MailOutline, contentDescription = "")
+                    Icon(
+                        imageVector = if (mail.status == 2) Icons.Filled.MarkEmailRead else Icons.Filled.MarkEmailUnread,
+                        contentDescription = "",
+                    )
                 },
                 modifier = Modifier.clickable {
                     onOpenMail(mail.id.toInt())

@@ -29,7 +29,7 @@ class MailViewModel @Inject constructor(
             val mailResponse = mailService.queryMails(type)
             if (mailResponse.result == 0) {
                 mutableStateFlow.update {
-                    it.copy(viewState = ViewState.Success(MailUiState.MailState(mailResponse.mails)))
+                    it.copy(viewState = ViewState.Success(MailUiState.MailState(mailResponse.mails.reversed())))
                 }
             } else {
                 mutableStateFlow.update {

@@ -14,6 +14,7 @@ import io.github.merlin.assistant.ui.screen.account.accountDestination
 import io.github.merlin.assistant.ui.screen.function.jewel.jewelDestination
 import io.github.merlin.assistant.ui.screen.function.jiange.jianGeDestination
 import io.github.merlin.assistant.ui.screen.function.mail.mailDestination
+import io.github.merlin.assistant.ui.screen.function.pot.arena.arenaDestination
 import io.github.merlin.assistant.ui.screen.function.pot.potDestination
 import io.github.merlin.assistant.ui.screen.function.pot.settings.potSettingsDestination
 import io.github.merlin.assistant.ui.screen.function.shop.shopDestination
@@ -53,6 +54,7 @@ fun MainScreen() {
         jianGeDestination(navController)
         shopDestination(navController)
         mailDestination(navController)
+        arenaDestination(navController)
     }
 
 }

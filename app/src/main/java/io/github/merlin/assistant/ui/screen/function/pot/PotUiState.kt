@@ -9,6 +9,7 @@ data class PotUiState(
     val logs: List<String> = listOf(),
     val potDetailViewState: ViewState = ViewState.Loading,
     val mysteryDialogState: MysteryDialogState = MysteryDialogState.Hide,
+    val undisposedDialogState: UndisposedDialogState = UndisposedDialogState.Hide,
     val jobbing: Boolean = false,
     val showBottomSheet: Boolean = false,
     val potSettings: PotSettings = PotSettings(),
@@ -43,12 +44,7 @@ data class PotUiState(
         val upgradeGoods: Long,
 
         val addBlessing: Int,
-    ) {
-
-        val showUndisposedDialog
-            get() = undisposed.isNotEmpty()
-
-    }
+    )
 
     sealed class MysteryDialogState {
         data class Show(
@@ -58,6 +54,11 @@ data class PotUiState(
 
         data object Hide : MysteryDialogState()
         data object Loading : MysteryDialogState()
+    }
+
+    sealed class UndisposedDialogState {
+        data class Show(val undisposed: PotResponse.Equipment): UndisposedDialogState()
+        data object Hide: UndisposedDialogState()
     }
 
 

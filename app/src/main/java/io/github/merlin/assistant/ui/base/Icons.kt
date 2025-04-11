@@ -45,3 +45,17 @@ fun SkillIcon(
         modifier = Modifier.size(48.dp),
     )
 }
+
+@Composable
+fun ShopIcon(id: String) {
+    val model = when(id) {
+        "1" -> ""
+        else -> "https://res.ledou.qq.com/ledoures/shop/ico$id.png"
+    }
+    SubcomposeAsyncImage(
+        model = model,
+        loading = { CircularProgressIndicator() },
+        contentDescription = null,
+        modifier = Modifier.size(16.dp),
+    )
+}

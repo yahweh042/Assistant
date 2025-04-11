@@ -26,12 +26,32 @@ class ShopPageViewModel @Inject constructor(
             ShopPageAction.HideDialog -> handleHideDialog(action)
             is ShopPageAction.ShowDialog -> handleShowDialog(action)
             is ShopPageAction.UpdateGoodsNum -> handleUpdateGoodsNum(action)
+            is ShopPageAction.BuyGoods -> handleBuyGoods(action)
+        }
+    }
+
+    private fun handleBuyGoods(action: ShopPageAction.BuyGoods) {
+        viewModelScope.launch {
+            val goods = action.commodityInfo
+            val response = shopRepo.buy(
+                id = goods.id,
+                subtype = goods.goodsType,
+                num = action.num,
+                price = goods.price,
+            )
+            if (response.result == 0) {
+                sendEvent(ShopPageEvent.ShowToast("购买成功 ${action.commodityInfo.name}*${action.num}"))
+                val shopType = action.shopType
+                handleRefreshShop(ShopPageAction.RefreshShop(shopType), showLoading = false)
+                mutableStateFlow.update { it.copy(dialogState = ShopPageUiState.CommodityInfoDialogState.Hide) }
+            } else {
+                sendEvent(ShopPageEvent.ShowToast("${response.msg}"))
+            }
         }
     }
 
     private fun handleUpdateGoodsNum(action: ShopPageAction.UpdateGoodsNum) {
         viewModelScope.launch {
-
             val commodityInfo = action.commodityInfo
             val num = when {
                 action.num < 0 -> 0
@@ -68,9 +88,11 @@ class ShopPageViewModel @Inject constructor(
         }
     }
 
-    private fun handleRefreshShop(action: ShopPageAction.RefreshShop) {
+    private fun handleRefreshShop(action: ShopPageAction.RefreshShop, showLoading: Boolean = true) {
         viewModelScope.launch {
-            mutableStateFlow.update { it.copy(viewState = ViewState.Loading) }
+            if (showLoading) {
+                mutableStateFlow.update { it.copy(viewState = ViewState.Loading) }
+            }
             val shopResponse = shopRepo.viewShop(action.shopType)
             if (shopResponse.result == 0) {
                 mutableStateFlow.update {

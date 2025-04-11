@@ -2,9 +2,12 @@ package io.github.merlin.assistant.data.network.service
 
 import io.github.merlin.assistant.data.network.NetworkDataSource
 import io.github.merlin.assistant.data.network.response.BasicResponse
+import io.github.merlin.assistant.data.network.response.FightArenaResponse
+import io.github.merlin.assistant.data.network.response.FightResponse
 import io.github.merlin.assistant.data.network.response.GetAwardResponse
 import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
+import io.github.merlin.assistant.data.network.response.QueryArenaResponse
 import javax.inject.Inject
 
 class PotService @Inject constructor(
@@ -84,6 +87,28 @@ class PotService @Inject constructor(
             "op" to "query_mystery"
         )
         return networkDataSource.request<MysteryResponse>("pot_world", params)
+    }
+
+    suspend fun signUpArena(): BasicResponse {
+        val params = mapOf(
+            "op" to "sign_up_arena"
+        )
+        return networkDataSource.request<BasicResponse>("pot_world", params)
+    }
+
+    suspend fun queryArena(): QueryArenaResponse {
+        val params = mapOf(
+            "op" to "query_arena"
+        )
+        return networkDataSource.request<QueryArenaResponse>("pot_world", params)
+    }
+
+    suspend fun fightArena(opp: Int): FightArenaResponse {
+        val params = mapOf(
+            "op" to "fight_arena",
+            "opp" to opp,
+        )
+        return networkDataSource.request<FightArenaResponse>("pot_world", params)
     }
 
 }
