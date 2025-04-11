@@ -95,7 +95,7 @@ fun LogsBottomSheet(
 
 @Composable
 fun DragHandle(onDismissRequest: () -> Unit) {
-    Row(modifier = Modifier.padding(top = 10.dp, start = 15.dp, bottom = 5.dp, end = 15.dp)) {
+    Row(modifier = Modifier.padding(top = 15.dp, start = 15.dp, bottom = 5.dp, end = 15.dp)) {
         Text(text = "运行日志")
         Spacer(modifier = Modifier.weight(1f))
         IconButton(onClick = onDismissRequest, modifier = Modifier.size(18.dp)) {

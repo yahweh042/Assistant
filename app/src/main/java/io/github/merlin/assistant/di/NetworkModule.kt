@@ -1,6 +1,5 @@
 package io.github.merlin.assistant.di
 
-import coil.intercept.Interceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,8 +10,6 @@ import io.github.merlin.assistant.repo.AccountRepo
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.UserAgent
-import io.ktor.client.plugins.api.ClientHook
-import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
@@ -58,7 +55,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideNetworkDataSource(httpClient: HttpClient, accountRepo: AccountRepo): NetworkDataSource {
+    fun provideNetworkDataSource(
+        httpClient: HttpClient,
+        accountRepo: AccountRepo
+    ): NetworkDataSource {
         return NetworkDataSource(httpClient, accountRepo)
     }
 

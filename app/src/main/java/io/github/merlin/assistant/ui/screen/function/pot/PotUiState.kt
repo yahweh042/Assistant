@@ -3,16 +3,18 @@ package io.github.merlin.assistant.ui.screen.function.pot
 import io.github.merlin.assistant.data.local.model.PotSettings
 import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
+import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 
 data class PotUiState(
     val logs: List<String> = listOf(),
-    val potDetailViewState: ViewState = ViewState.Loading,
+    val viewState: ViewState = ViewState.Loading,
     val mysteryDialogState: MysteryDialogState = MysteryDialogState.Hide,
     val undisposedDialogState: UndisposedDialogState = UndisposedDialogState.Hide,
     val jobbing: Boolean = false,
     val showBottomSheet: Boolean = false,
     val potSettings: PotSettings = PotSettings(),
+    val loadingDialogState: LoadingDialogState = LoadingDialogState.Nothing,
 ) {
 
     data class PotDetailState(

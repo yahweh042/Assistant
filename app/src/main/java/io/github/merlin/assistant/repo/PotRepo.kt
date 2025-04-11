@@ -61,6 +61,8 @@ class PotRepo @Inject constructor(
 
     suspend fun queryMystery(): MysteryResponse = potService.queryMystery()
 
+    suspend fun signUpArena() = potService.signUpArena()
+
     suspend fun queryArena(): QueryArenaResponse = potService.queryArena()
 
     suspend fun fightArena(opp: Int): FightArenaResponse = potService.fightArena(opp)

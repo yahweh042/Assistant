@@ -61,6 +61,8 @@ import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.ui.base.AssistantDialog
 import io.github.merlin.assistant.ui.base.ErrorContent
 import io.github.merlin.assistant.ui.base.LaunchedEvent
+import io.github.merlin.assistant.ui.base.LoadingDialog
+import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.LogsBottomSheet
 import io.github.merlin.assistant.ui.base.PagerTabIndicator
 import io.github.merlin.assistant.ui.base.ViewState
@@ -76,7 +78,7 @@ fun PotScreen(
 
     val viewModel: PotViewModel = hiltViewModel()
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
-    val viewState = state.potDetailViewState
+    val viewState = state.viewState
     val context = LocalContext.current
 
     LaunchedEvent(viewModel = viewModel) { event ->
@@ -371,12 +373,9 @@ fun MysteryDialog(
 
     when (state) {
         PotUiState.MysteryDialogState.Hide -> Unit
-        PotUiState.MysteryDialogState.Loading -> Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            CircularProgressIndicator()
-        }
+        PotUiState.MysteryDialogState.Loading -> LoadingDialog(
+            loadingDialogState = LoadingDialogState.Loading()
+        )
 
         is PotUiState.MysteryDialogState.Show -> BasicAlertDialog(
             onDismissRequest = { onHideMysteryDialog() },
@@ -455,8 +454,11 @@ fun UndisposedDialog(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onDecompose(state.undisposed.equipmentId) }) {
-                    Text(text = "分解")
+                Row {
+                    CircularProgressIndicator()
+                    TextButton(onClick = { onDecompose(state.undisposed.equipmentId) }) {
+                        Text(text = "分解")
+                    }
                 }
             },
             title = { Text(text = "选择装备") },

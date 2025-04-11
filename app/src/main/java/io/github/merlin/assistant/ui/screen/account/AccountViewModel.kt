@@ -84,7 +84,7 @@ class AccountViewModel @Inject constructor(
         viewModelScope.launch {
             when (val switchResult = accountRepo.switchAccount(action.uid)) {
                 SwitchAccountResult.Switched -> sendEvent(AccountEvent.ShowToast("切换成功"))
-                SwitchAccountResult.NoChange -> {}
+                SwitchAccountResult.NoChange -> Unit
                 is SwitchAccountResult.SwitchError -> sendEvent(AccountEvent.ShowToast(switchResult.msg))
             }
         }

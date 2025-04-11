@@ -37,6 +37,7 @@ import coil.compose.SubcomposeAsyncImage
 import io.github.merlin.assistant.ui.base.ErrorContent
 import io.github.merlin.assistant.ui.base.LaunchedEvent
 import io.github.merlin.assistant.ui.base.LoadingContent
+import io.github.merlin.assistant.ui.base.LoadingDialog
 import io.github.merlin.assistant.ui.base.ViewState
 import java.net.URLDecoder
 
@@ -78,7 +79,7 @@ fun ArenaScreen(
                 is ViewState.Error -> ErrorContent(
                     msg = viewState.msg,
                     retry = {
-                        viewModel.trySendAction(ArenaAction.QueryArena)
+                        viewModel.trySendAction(ArenaAction.RetryQueryArena)
                     },
                 )
 
@@ -91,6 +92,7 @@ fun ArenaScreen(
                 )
             }
         }
+        LoadingDialog(loadingDialogState = state.loadingDialogState)
     }
 }
 
