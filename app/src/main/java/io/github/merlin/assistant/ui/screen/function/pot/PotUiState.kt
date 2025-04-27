@@ -8,7 +8,7 @@ import io.github.merlin.assistant.ui.base.ViewState
 
 data class PotUiState(
     val logs: List<String> = listOf(),
-    val viewState: ViewState = ViewState.Loading,
+    val viewState: ViewState<PotDetailState> = ViewState.Loading,
     val mysteryDialogState: MysteryDialogState = MysteryDialogState.Hide,
     val undisposedDialogState: UndisposedDialogState = UndisposedDialogState.Hide,
     val jobbing: Boolean = false,

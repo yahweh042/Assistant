@@ -47,7 +47,6 @@ fun HomeScreen(
 ) {
 
     val viewModel: MainViewModel = hiltViewModel()
-
     val state by viewModel.stateFlow.collectAsState()
 
     LaunchedEvent(viewModel = viewModel) { event ->
@@ -123,6 +122,8 @@ fun HomeScreen(
                     )
                 },
             )
+
+//            QualityBox(image = ImageBitmap.imageResource(R.drawable.ico))
         }
     }
 }
@@ -153,10 +154,11 @@ fun AccountCard(
                         Icon(
                             imageVector = Icons.Default.AccountBox,
                             contentDescription = null,
+                            modifier = Modifier.size(32.dp)
                         )
                     },
                     loading = {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(modifier = Modifier.padding(8.dp))
                     }
                 )
             },

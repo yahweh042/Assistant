@@ -10,6 +10,7 @@ data class Account(
     val token: String,
     val openid: String,
     val isActive: Boolean? = false,
+    val cookie: String,
 )
 
 @Serializable

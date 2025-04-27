@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.data.network.service.MailService
 import io.github.merlin.assistant.ui.base.AbstractViewModel
+import io.github.merlin.assistant.ui.base.LoadingDialog
+import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,7 +45,33 @@ class MailViewModel @Inject constructor(
         when (action) {
             is MailAction.QueryMails -> queryMails(action.type)
             is MailAction.OpenMail -> openMail(action.id)
+            is MailAction.GetReward -> getReward(action.id)
             MailAction.HideSheet -> hideSheet()
+        }
+    }
+
+    private fun getReward(id: Int) {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Loading("领取奖励"))
+            }
+            val response = mailService.getReward(id)
+            if (response.result == 0) {
+                mutableStateFlow.update {
+                    it.copy(
+                        loadingDialogState = LoadingDialogState.Nothing,
+                        sheetState = MailUiState.SheetState.HideSheet,
+                    )
+                }
+                sendEvent(MailEvent.ShowToast("领取奖励 OK"))
+            } else {
+                mutableStateFlow.update {
+                    it.copy(
+                        loadingDialogState = LoadingDialogState.Nothing,
+                    )
+                }
+                sendEvent(MailEvent.ShowToast("领取奖励 失败 ${response.msg}"))
+            }
         }
     }
 
@@ -57,9 +85,9 @@ class MailViewModel @Inject constructor(
 
     private fun openMail(id: Int) {
         viewModelScope.launch {
-            mutableStateFlow.update { it.copy(operateLoading = true) }
+            mutableStateFlow.update { it.copy(loadingDialogState = LoadingDialogState.Loading("打开邮件")) }
             val openMailResponse = mailService.openMail(id)
-            mutableStateFlow.update { it.copy(operateLoading = false) }
+            mutableStateFlow.update { it.copy(loadingDialogState = LoadingDialogState.Nothing) }
             if (openMailResponse.result == 0) {
                 mutableStateFlow.update {
                     it.copy(sheetState = MailUiState.SheetState.ShowSheet(openMailResponse.mailDetail))

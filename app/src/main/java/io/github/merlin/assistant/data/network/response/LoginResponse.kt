@@ -15,7 +15,7 @@ data class LoginResponse(
     val token: String? = null,
 )
 
-fun LoginResponse.toAccount(): Account {
+fun LoginResponse.toAccount(cookie: String): Account {
     return Account(
         uid = uid ?: "",
         name = URLDecoder.decode((name ?: ""), "utf-8"),
@@ -23,5 +23,6 @@ fun LoginResponse.toAccount(): Account {
         token = token ?: "",
         openid = openid ?: "",
         isActive = false,
+        cookie = cookie,
     )
 }

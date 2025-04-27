@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -51,12 +53,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import coil.compose.SubcomposeAsyncImage
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.ui.base.AssistantDialog
 import io.github.merlin.assistant.ui.base.ErrorContent
@@ -65,7 +69,9 @@ import io.github.merlin.assistant.ui.base.LoadingDialog
 import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.LogsBottomSheet
 import io.github.merlin.assistant.ui.base.PagerTabIndicator
+import io.github.merlin.assistant.ui.base.SkillIcon
 import io.github.merlin.assistant.ui.base.ViewState
+import io.github.merlin.assistant.ui.base.WeaponIcon
 import io.github.merlin.assistant.ui.screen.function.pot.arena.navigateToArena
 import io.github.merlin.assistant.ui.screen.function.pot.settings.navigateToPotSettings
 import kotlinx.coroutines.launch
@@ -162,6 +168,9 @@ fun PotScreen(
             onDismissRequest = {
                 viewModel.trySendAction(PotAction.HideBottomSheet)
             }
+        )
+        LoadingDialog(
+            loadingDialogState = state.loadingDialogState,
         )
     }
 
@@ -454,11 +463,8 @@ fun UndisposedDialog(
                 }
             },
             dismissButton = {
-                Row {
-                    CircularProgressIndicator()
-                    TextButton(onClick = { onDecompose(state.undisposed.equipmentId) }) {
-                        Text(text = "分解")
-                    }
+                TextButton(onClick = { onDecompose(state.undisposed.equipmentId) }) {
+                    Text(text = "分解")
                 }
             },
             title = { Text(text = "选择装备") },
@@ -484,10 +490,35 @@ fun EquipmentCard(equipment: PotResponse.Equipment) {
             .padding(0.dp, 5.dp),
     ) {
         Column(modifier = Modifier.padding(15.dp)) {
-            Text(text = equipment.name, fontWeight = FontWeight.Bold)
-            Text(text = "等级：${equipment.level}")
-            Text(text = "类型：${equipment.type}")
-            Text(text = "品质：${equipment.quality}")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(verticalArrangement = Arrangement.Center) {
+                    when {
+                        equipment.type >= 1 && equipment.type <= 3 -> WeaponIcon(
+                            id = equipment.refId,
+                            level = equipment.refLevel
+                        )
+                        equipment.type >= 4 && equipment.type <= 5 -> SkillIcon(
+                            id = equipment.refId,
+                            level = equipment.refLevel
+                        )
+                        else -> SubcomposeAsyncImage(
+                            model = "https://res.ledou.qq.com/ledoures/potworld/lv0/pic/${equipment.refId}.png",
+                            loading = { CircularProgressIndicator(modifier = Modifier.padding(10.dp)) },
+                            contentDescription = null,
+                            modifier = Modifier.size(60.dp),
+                        )
+                    }
+                }
+                Column(modifier = Modifier.padding(start = 5.dp)) {
+                    Text(text = equipment.name, fontWeight = FontWeight.Bold)
+                    Text(text = "等级：${equipment.level}")
+                    Text(text = "类型：${equipment.type}")
+                    Text(text = "品质：${equipment.quality}")
+                }
+            }
+            Row(modifier = Modifier.padding(vertical = 5.dp)) {
+                HorizontalDivider(modifier = Modifier.height(Dp.Hairline))
+            }
             Text(text = "战力：${equipment.point}")
             Text(text = "主属性：${equipment.primaryAttrs}")
             Text(text = "次属性：${equipment.subAttrs}")

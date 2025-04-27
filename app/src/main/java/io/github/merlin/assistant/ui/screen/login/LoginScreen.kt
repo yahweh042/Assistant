@@ -19,7 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,8 +27,7 @@ import com.google.accompanist.web.LoadingState
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import io.github.merlin.assistant.ui.base.LaunchedEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -45,16 +43,13 @@ fun LoginScreen(
     val webViewState = rememberWebViewState(url = initialUrl)
     val loadingState = webViewState.loadingState
     val webViewNavigator = rememberWebViewNavigator()
-    val loginViewModel: LoginViewModel = hiltViewModel()
+    val viewModel: LoginViewModel = hiltViewModel()
 
-    LaunchedEffect(key1 = loginViewModel) {
-        loginViewModel.eventFlow.onEach { event ->
-            when (event) {
-                LoginEvent.NavigateBack -> navController.popBackStack()
-                is LoginEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }.launchIn(this)
+    LaunchedEvent(viewModel = viewModel) { event ->
+        when (event) {
+            LoginEvent.NavigateBack -> navController.popBackStack()
+            is LoginEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT).show()
+        }
     }
 
     Scaffold(
@@ -78,7 +73,7 @@ fun LoginScreen(
                     }
                     IconButton(onClick = {
                         val cookie = CookieManager.getInstance().getCookie(initialUrl)
-                        loginViewModel.trySendAction(LoginAction.LoginMenuClick(cookie))
+                        viewModel.trySendAction(LoginAction.LoginMenuClick(cookie))
                     }) {
                         Icon(imageVector = Icons.Default.Done, contentDescription = "")
                     }
@@ -98,6 +93,12 @@ fun LoginScreen(
                 navigator = webViewNavigator,
                 modifier = Modifier.fillMaxSize(),
                 onCreated = { webView ->
+                    val cookieManager = CookieManager.getInstance()
+                    cookieManager.setAcceptCookie(true)
+                    cookieManager.setCookie(
+                        initialUrl,
+                        "_qpsvr_localtk=0.4957078562492454; RK=2+tZD/++1+; ptcz=2ba32ea72555e684298f591f9e213f642b1f5ea67813baa7a4d2e3c7a1af9f86; qmdld_login_report=1; policyplay=0; h5game_appid=1105748669; h5game_accesstoken=6BEF5E982B7326E2DB69BBE07AA4E369; h5game_openid=C66C58092F87266326EEC5F33A649967; h5game_paytoken=E65EB2A6F24686F828212AD434ABF612"
+                    )
                     webView.settings.javaScriptEnabled = true
                     webView.settings.userAgentString = userAgent
                     webView.settings.domStorageEnabled = true

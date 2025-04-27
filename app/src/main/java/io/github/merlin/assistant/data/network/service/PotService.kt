@@ -8,6 +8,7 @@ import io.github.merlin.assistant.data.network.response.GetAwardResponse
 import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.data.network.response.QueryArenaResponse
+import io.github.merlin.assistant.data.network.response.ViewPackResponse
 import javax.inject.Inject
 
 class PotService @Inject constructor(
@@ -109,6 +110,13 @@ class PotService @Inject constructor(
             "opp" to opp,
         )
         return networkDataSource.request<FightArenaResponse>("pot_world", params)
+    }
+
+    suspend fun viewPack(): ViewPackResponse {
+        val params = mapOf(
+            "op" to "view_pack",
+        )
+        return networkDataSource.request<ViewPackResponse>("pot_world", params)
     }
 
 }

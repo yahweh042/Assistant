@@ -19,9 +19,6 @@ class NetworkDataSource @Inject constructor(
     val httpClient: HttpClient,
     val accountRepo: AccountRepo,
 ) {
-
-    val noAuthCmd = setOf("index")
-
     suspend inline fun <reified T> request(cmd: String, params: Map<String, Any> = mapOf()): T {
         val httpRequestBuilder = HttpRequestBuilder()
         httpRequestBuilder.url("https://zone1.ledou.qq.com/fcgi-bin/petpk")
@@ -35,7 +32,7 @@ class NetworkDataSource @Inject constructor(
         params.forEach { (key, value) -> parametersBuilder.append(key, value.toString()) }
         parametersBuilder.append("uin", "")
         parametersBuilder.append("skey", "")
-        if (!noAuthCmd.contains(cmd)) {
+        if (!params.containsKey("h5token")) {
             accountRepo.accountState?.activeAccount?.let {
                 parametersBuilder.append("uid", it.uid)
                 parametersBuilder.append("h5openid", it.openid)

@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.repo.PotRepo
 import io.github.merlin.assistant.ui.base.AbstractViewModel
+import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
@@ -128,6 +129,9 @@ class PotViewModel @Inject constructor(
 
     private fun handleEquip(action: PotAction.Equip) {
         viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Loading("正在装备"))
+            }
             val equipResult = potRepo.equip(action.equipmentId.toString())
             if (equipResult.result == 0) {
                 mutableStateFlow.update {
@@ -140,11 +144,17 @@ class PotViewModel @Inject constructor(
             } else {
                 mutableStateFlow.update { it.copy(viewState = ViewState.Error(equipResult.msg)) }
             }
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Nothing)
+            }
         }
     }
 
     private fun handleDecompose(action: PotAction.Decompose) {
         viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Loading("正在分解"))
+            }
             val decomposeResult = potRepo.decompose(action.equipmentId)
             if (decomposeResult.result == 0) {
                 mutableStateFlow.update {
@@ -158,6 +168,9 @@ class PotViewModel @Inject constructor(
                 mutableStateFlow.update {
                     it.copy(viewState = ViewState.Error(decomposeResult.msg))
                 }
+            }
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Nothing)
             }
         }
     }
@@ -349,6 +362,9 @@ class PotViewModel @Inject constructor(
     private fun shouldDecomposeEquip(undisposed: PotResponse.Equipment): Boolean {
         val potSettings = state.potSettings
         if (!potSettings.attrFilter) {
+            return false
+        }
+        if (undisposed.level == 30) {
             return false
         }
         val subAttrs = undisposed.subAttrs

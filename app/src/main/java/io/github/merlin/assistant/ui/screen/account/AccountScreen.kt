@@ -183,6 +183,12 @@ fun EditAccountDialog(
                         onValueChange = { onChangeToken(it) },
                         label = { Text(text = "token") },
                     )
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = state.account.cookie,
+                        onValueChange = { },
+                        label = { Text(text = "cookie") },
+                    )
                 }
             },
         )

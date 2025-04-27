@@ -14,7 +14,7 @@ fun JianGeQueryResponse.toViewState(): JianGeUiState.QueryState {
 }
 
 data class JianGeUiState(
-    val viewState: ViewState = ViewState.Loading,
+    val viewState: ViewState<QueryState> = ViewState.Loading,
     val logs: List<String> = listOf(),
     val showBottomSheet: Boolean = false,
     val isSpecial: Int = 0,

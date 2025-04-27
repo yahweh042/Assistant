@@ -1,10 +1,13 @@
 package io.github.merlin.assistant.ui.screen.function.mail
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,12 +21,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
@@ -40,11 +46,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import io.github.merlin.assistant.ui.base.ErrorContent
+import io.github.merlin.assistant.ui.base.GoodsIcon
+import io.github.merlin.assistant.ui.base.LaunchedEvent
+import io.github.merlin.assistant.ui.base.LoadingContent
+import io.github.merlin.assistant.ui.base.LoadingDialog
 import io.github.merlin.assistant.ui.base.ViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +69,14 @@ fun MailScreen(
     val viewState = state.viewState
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    val context = LocalContext.current
+
+    LaunchedEvent(viewModel) { event ->
+        when(event) {
+            is MailEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -97,7 +116,7 @@ fun MailScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
             when (viewState) {
-                ViewState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                ViewState.Loading -> LoadingContent()
                 is ViewState.Error -> {
                     ErrorContent(
                         msg = viewState.msg,
@@ -105,8 +124,8 @@ fun MailScreen(
                     )
                 }
 
-                is ViewState.Success<*> -> MailContent(
-                    state = viewState.data as MailUiState.MailState,
+                is ViewState.Success<MailUiState.MailState> -> MailContent(
+                    state = viewState.data,
                     nestedScrollConnection = scrollBehavior.nestedScrollConnection,
                     paddingValues = paddingValues,
                     onOpenMail = { viewModel.trySendAction(MailAction.OpenMail(it)) }
@@ -114,13 +133,11 @@ fun MailScreen(
             }
             MailSheet(
                 sheetState = state.sheetState,
-                hideSheet = { viewModel.trySendAction(MailAction.HideSheet) },
+                paddingValues = paddingValues,
+                onHideSheet = { viewModel.trySendAction(MailAction.HideSheet) },
+                onGetReward = { viewModel.trySendAction(MailAction.GetReward(it)) }
             )
-            if (state.operateLoading) {
-                Dialog(onDismissRequest = {}) {
-                    CircularProgressIndicator()
-                }
-            }
+            LoadingDialog(loadingDialogState = state.loadingDialogState)
         }
     }
 
@@ -144,7 +161,7 @@ fun MailContent(
                 trailingContent = { Text(text = mail.formatTime) },
                 leadingContent = {
                     Icon(
-                        imageVector = if (mail.status == 2) Icons.Filled.MarkEmailRead else Icons.Filled.MarkEmailUnread,
+                        imageVector = if (mail.reward == 2) Icons.Filled.MarkEmailRead else Icons.Filled.MarkEmailUnread,
                         contentDescription = "",
                     )
                 },
@@ -160,13 +177,15 @@ fun MailContent(
 @Composable
 fun MailSheet(
     sheetState: MailUiState.SheetState,
-    hideSheet: () -> Unit,
+    paddingValues: PaddingValues,
+    onHideSheet: () -> Unit,
+    onGetReward: (Int) -> Unit,
 ) {
     val configuration = LocalConfiguration.current
     when (sheetState) {
         MailUiState.SheetState.HideSheet -> Unit
         is MailUiState.SheetState.ShowSheet -> ModalBottomSheet(
-            onDismissRequest = hideSheet,
+            onDismissRequest = onHideSheet,
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             contentWindowInsets = { BottomSheetDefaults.windowInsets.only(WindowInsetsSides.Horizontal) },
             shape = ShapeDefaults.Medium,
@@ -175,8 +194,43 @@ fun MailSheet(
                 modifier = Modifier
                     .padding(horizontal = 15.dp)
                     .height(configuration.screenHeightDp.dp / 2)
+                    .padding(bottom = paddingValues.calculateBottomPadding())
             ) {
+                Text(text = sheetState.data.title, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = sheetState.data.sender,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Column(modifier = Modifier.padding(vertical = 5.dp)) {
+                    HorizontalDivider(modifier = Modifier.height(Dp.Hairline))
+                }
                 Text(text = sheetState.data.content)
+                Row(
+                    modifier = Modifier.padding(top = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    sheetState.data.rewardList.forEach { item ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            GoodsIcon(iconId = item.iconId ?: 0L, id = item.id)
+                            Text(text = "*${item.num}")
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Button(
+                        onClick = { onGetReward(sheetState.data.id.toInt()) },
+                        enabled = sheetState.data.reward == 1
+                    ) {
+                        Text(text = if (sheetState.data.reward == 1) "领取奖励" else "已领取")
+                    }
+                    Button(onClick = {}) {
+                        Text(text = "删除")
+                    }
+                }
+
             }
         }
     }

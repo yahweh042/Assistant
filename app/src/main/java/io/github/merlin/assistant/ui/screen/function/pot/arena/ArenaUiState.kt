@@ -5,7 +5,7 @@ import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 
 data class ArenaUiState(
-    val viewState: ViewState = ViewState.Loading,
+    val viewState: ViewState<ArenaState> = ViewState.Loading,
     val loadingDialogState: LoadingDialogState = LoadingDialogState.Nothing,
 ) {
 

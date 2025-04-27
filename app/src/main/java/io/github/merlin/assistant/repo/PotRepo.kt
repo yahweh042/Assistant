@@ -7,6 +7,7 @@ import io.github.merlin.assistant.data.network.response.GetAwardResponse
 import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.data.network.response.QueryArenaResponse
+import io.github.merlin.assistant.data.network.response.ViewPackResponse
 import io.github.merlin.assistant.data.network.service.PotService
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
@@ -66,4 +67,6 @@ class PotRepo @Inject constructor(
     suspend fun queryArena(): QueryArenaResponse = potService.queryArena()
 
     suspend fun fightArena(opp: Int): FightArenaResponse = potService.fightArena(opp)
+
+    suspend fun viewPack(): ViewPackResponse = potService.viewPack()
 }

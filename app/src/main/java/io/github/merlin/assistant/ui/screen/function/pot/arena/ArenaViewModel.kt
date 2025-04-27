@@ -66,7 +66,7 @@ class ArenaViewModel @Inject constructor(
                                 freeTimes = queryResponse.freeTimes,
                                 selfRank = queryResponse.selfRank,
                                 totalPoint = queryResponse.totalPoint,
-                                oppInfo = queryResponse.oppInfo,
+                                oppInfo = queryResponse.oppInfo.sortedBy { opp -> opp.rank },
                             )
                         )
                     )

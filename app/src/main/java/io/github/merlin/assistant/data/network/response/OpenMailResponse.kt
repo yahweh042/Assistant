@@ -19,7 +19,22 @@ data class OpenMailResponse(
         val title: String,
         val content: String,
         val click: Int,
-    )
+        val sender: String,
+        val status: Int,
+        val reward: Int,
+        @SerialName("rewardlist")
+        val rewardList: List<Reward>,
+    ) {
+
+        @Serializable
+        data class Reward(
+            val id:Int,
+            val num:Int,
+            @SerialName("icon_id")
+            val iconId: Long?,
+        )
+
+    }
 
 
 }

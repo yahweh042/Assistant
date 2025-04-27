@@ -18,7 +18,6 @@ object LocalShopTypeProvider {
                 ShopType(type = "16", name = "圣物"),
                 ShopType(type = "17", name = "高级精华"),
                 ShopType(type = "25", name = "特级精华"),
-                ShopType(type = "41", name = "替身"),
             )
         )
     }

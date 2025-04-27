@@ -8,7 +8,7 @@ import io.github.merlin.assistant.ui.base.ViewState
 data class ShopUiState(
     val shopTypes: List<ShopType> = listOf(),
     val pagerState: PagerState? = null,
-    val viewState: ViewState = ViewState.Loading,
+    val viewState: ViewState<List<CommodityInfo>> = ViewState.Loading,
 ) {
 
     data class ShopContentState(

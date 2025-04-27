@@ -24,7 +24,7 @@ class LoginRepo @Inject constructor(
         }
         val loginResponse = loginService.login(h5token, h5openid)
         if (loginResponse.result == 0) {
-            accountRepo.insertAccount(loginResponse.toAccount())
+            accountRepo.insertAccount(loginResponse.toAccount(cookie))
             return LoginResult.Success
         } else {
             return LoginResult.Error("登陆失败,${loginResponse.msg}")

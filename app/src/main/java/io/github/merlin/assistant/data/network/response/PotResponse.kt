@@ -112,6 +112,10 @@ data class PotResponse(
         val subAttrs: String,
         @SerialName("point")
         val point: Int,
+        @SerialName("ref_id")
+        val refId: Long,
+        @SerialName("ref_level")
+        val refLevel: Int,
 
         @SerialName("equipped")
         val equipped: Equipment?,
@@ -158,3 +162,11 @@ data class PotResponse(
     )
 
 }
+
+@Serializable
+data class ViewPackResponse(
+    val result: Int,
+    val msg: String?,
+    @SerialName("goods_info")
+    val goodsInfo: List<GoodsInfo>?,
+)

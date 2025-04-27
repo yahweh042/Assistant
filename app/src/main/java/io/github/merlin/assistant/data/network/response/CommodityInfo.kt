@@ -42,6 +42,8 @@ data class CommodityInfo(
     val subtype: Int,
     @SerialName("vip_level")
     val vipLevel: Int,
+
+    val storageNum: Int = 0,
 ) {
      val rangeMaxNum
          get() = if (maxNum > 100) 100 else maxNum

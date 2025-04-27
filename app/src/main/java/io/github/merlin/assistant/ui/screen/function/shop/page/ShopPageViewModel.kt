@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.repo.ShopRepo
 import io.github.merlin.assistant.ui.base.AbstractViewModel
+import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,6 +33,9 @@ class ShopPageViewModel @Inject constructor(
 
     private fun handleBuyGoods(action: ShopPageAction.BuyGoods) {
         viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Loading("购买中"))
+            }
             val goods = action.commodityInfo
             val response = shopRepo.buy(
                 id = goods.id,
@@ -40,12 +44,14 @@ class ShopPageViewModel @Inject constructor(
                 price = goods.price,
             )
             if (response.result == 0) {
+                viewShop(action.shopType)
                 sendEvent(ShopPageEvent.ShowToast("购买成功 ${action.commodityInfo.name}*${action.num}"))
-                val shopType = action.shopType
-                handleRefreshShop(ShopPageAction.RefreshShop(shopType), showLoading = false)
                 mutableStateFlow.update { it.copy(dialogState = ShopPageUiState.CommodityInfoDialogState.Hide) }
             } else {
                 sendEvent(ShopPageEvent.ShowToast("${response.msg}"))
+            }
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Nothing)
             }
         }
     }
@@ -54,7 +60,7 @@ class ShopPageViewModel @Inject constructor(
         viewModelScope.launch {
             val commodityInfo = action.commodityInfo
             val num = when {
-                action.num < 0 -> 0
+                action.num < 1 -> 1
                 action.num > commodityInfo.maxNum -> commodityInfo.maxNum
                 else -> action.num
             }
@@ -74,9 +80,7 @@ class ShopPageViewModel @Inject constructor(
         viewModelScope.launch {
             mutableStateFlow.update {
                 it.copy(
-                    dialogState = ShopPageUiState.CommodityInfoDialogState.Show(
-                        action.commodityInfo
-                    )
+                    dialogState = ShopPageUiState.CommodityInfoDialogState.Show(action.commodityInfo)
                 )
             }
         }
@@ -88,26 +92,36 @@ class ShopPageViewModel @Inject constructor(
         }
     }
 
-    private fun handleRefreshShop(action: ShopPageAction.RefreshShop, showLoading: Boolean = true) {
+    private fun handleRefreshShop(action: ShopPageAction.RefreshShop) {
         viewModelScope.launch {
-            if (showLoading) {
-                mutableStateFlow.update { it.copy(viewState = ViewState.Loading) }
+            mutableStateFlow.update {
+                it.copy(viewState = ViewState.Loading)
             }
-            val shopResponse = shopRepo.viewShop(action.shopType)
-            if (shopResponse.result == 0) {
-                mutableStateFlow.update {
-                    it.copy(
-                        viewState = ViewState.Success(
-                            ShopPageUiState.ContentState(
-                                shopResponse.commodityInfo ?: listOf()
-                            )
+            viewShop(action.shopType)
+        }
+    }
+
+    private suspend fun viewShop(shopType: String) {
+        val storageGoodsInfo = shopRepo.storageGoodsInfo()
+        val shopResponse = shopRepo.viewShop(shopType)
+        if (shopResponse.result == 0) {
+            val money = shopResponse.money(shopType) ?: 0
+            val commodityInfo = shopResponse.commodityInfo?.map {
+                it.copy(storageNum = storageGoodsInfo[it.goodsId] ?: 0)
+            } ?: listOf()
+            mutableStateFlow.update {
+                it.copy(
+                    viewState = ViewState.Success(
+                        ShopPageUiState.ShopPageState(
+                            money = money,
+                            commodityInfo = commodityInfo
                         )
                     )
-                }
-            } else {
-                mutableStateFlow.update {
-                    it.copy(viewState = ViewState.Error(shopResponse.msg ?: ""))
-                }
+                )
+            }
+        } else {
+            mutableStateFlow.update {
+                it.copy(viewState = ViewState.Error(shopResponse.msg ?: ""))
             }
         }
     }
