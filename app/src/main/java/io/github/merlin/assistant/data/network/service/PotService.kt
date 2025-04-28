@@ -3,11 +3,11 @@ package io.github.merlin.assistant.data.network.service
 import io.github.merlin.assistant.data.network.NetworkDataSource
 import io.github.merlin.assistant.data.network.response.BasicResponse
 import io.github.merlin.assistant.data.network.response.FightArenaResponse
-import io.github.merlin.assistant.data.network.response.FightResponse
 import io.github.merlin.assistant.data.network.response.GetAwardResponse
 import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.data.network.response.QueryArenaResponse
+import io.github.merlin.assistant.data.network.response.QueryExchangeResponse
 import io.github.merlin.assistant.data.network.response.ViewPackResponse
 import javax.inject.Inject
 
@@ -117,6 +117,20 @@ class PotService @Inject constructor(
             "op" to "view_pack",
         )
         return networkDataSource.request<ViewPackResponse>("pot_world", params)
+    }
+
+    suspend fun queryExchange(): QueryExchangeResponse {
+        val params = mapOf(
+            "op" to "query_exchange",
+        )
+        return networkDataSource.request<QueryExchangeResponse>("pot_world", params)
+    }
+
+    suspend fun mysteryExchange(id: Int): BasicResponse {
+        val params = mapOf(
+            "op" to "mystery_exchange",
+        )
+        return networkDataSource.request<BasicResponse>("pot_world", params)
     }
 
 }

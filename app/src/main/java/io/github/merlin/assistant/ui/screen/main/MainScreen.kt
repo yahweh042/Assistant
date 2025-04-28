@@ -7,14 +7,12 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import io.github.merlin.assistant.ui.screen.account.accountDestination
 import io.github.merlin.assistant.ui.screen.function.jewel.jewelDestination
 import io.github.merlin.assistant.ui.screen.function.jiange.jianGeDestination
 import io.github.merlin.assistant.ui.screen.function.mail.mailDestination
-import io.github.merlin.assistant.ui.screen.function.pot.arena.arenaDestination
 import io.github.merlin.assistant.ui.screen.function.pot.potDestination
 import io.github.merlin.assistant.ui.screen.function.pot.settings.potSettingsDestination
 import io.github.merlin.assistant.ui.screen.function.shop.shopDestination
@@ -54,7 +52,6 @@ fun MainScreen() {
         jianGeDestination(navController)
         shopDestination(navController)
         mailDestination(navController)
-        arenaDestination(navController)
     }
 
 }

@@ -58,7 +58,6 @@ fun ShopPage(
     val context = LocalContext.current
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
     val viewState = state.viewState
-    val dialogState = state.dialogState
 
     LaunchedEffect(Unit) {
         viewModel.trySendAction(ShopPageAction.RefreshShop(shopType))
@@ -89,29 +88,57 @@ fun ShopPage(
         )
     }
 
+    CommodityInfoDialog(
+        dialogState = state.dialogState,
+        shopType = shopType,
+        onHideDialog = { viewModel.trySendAction(ShopPageAction.HideDialog) },
+        onUpdateGoodsNum = { commodityInfo, num ->
+            viewModel.trySendAction(
+                ShopPageAction.UpdateGoodsNum(
+                    commodityInfo = commodityInfo,
+                    num = num,
+                )
+            )
+        },
+        onBuyGoods = { shopType, commodityInfo, num ->
+            viewModel.trySendAction(
+                ShopPageAction.BuyGoods(
+                    shopType = shopType,
+                    commodityInfo = commodityInfo,
+                    num = num,
+                )
+            )
+        },
+    )
+
+    LoadingDialog(loadingDialogState = state.loadingDialogState)
+}
+
+@Composable
+fun CommodityInfoDialog(
+    dialogState: ShopPageUiState.CommodityInfoDialogState,
+    shopType: String,
+    onHideDialog: () -> Unit,
+    onUpdateGoodsNum: (CommodityInfo, Int) -> Unit,
+    onBuyGoods: (String, CommodityInfo, Int) -> Unit,
+) {
     when (dialogState) {
         ShopPageUiState.CommodityInfoDialogState.Hide -> Unit
         is ShopPageUiState.CommodityInfoDialogState.Show -> AssistantDialog(
             onDismissRequest = {
-                viewModel.trySendAction(ShopPageAction.HideDialog)
+                onHideDialog()
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.trySendAction(
-                            ShopPageAction.BuyGoods(
-                                shopType = shopType,
-                                commodityInfo = dialogState.commodityInfo,
-                                num = dialogState.num,
-                            )
-                        )
+                        onBuyGoods(shopType, dialogState.commodityInfo, dialogState.num)
                     },
                 ) {
                     Text(text = "购买")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.trySendAction(ShopPageAction.HideDialog) }) {
+                TextButton(onClick = { onHideDialog }) {
                     Text(text = "取消")
                 }
             },
@@ -158,9 +185,7 @@ fun ShopPage(
                     NumberTextField(
                         value = dialogState.num,
                         onValueChange = {
-                            viewModel.trySendAction(
-                                ShopPageAction.UpdateGoodsNum(dialogState.commodityInfo, it)
-                            )
+                            onUpdateGoodsNum(dialogState.commodityInfo, it)
                         },
                         maxValue = dialogState.commodityInfo.maxNum,
                     )
@@ -178,8 +203,6 @@ fun ShopPage(
 
         }
     }
-
-    LoadingDialog(loadingDialogState = state.loadingDialogState)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -219,7 +242,9 @@ fun ShopPageContent(
             shape = ShapeDefaults.Medium,
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 15.dp).fillMaxHeight(),
+                modifier = Modifier
+                    .padding(horizontal = 15.dp)
+                    .fillMaxHeight(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ShopIcon(id = shopType)

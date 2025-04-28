@@ -1,4 +1,4 @@
-package io.github.merlin.assistant.ui.screen.function.pot
+package io.github.merlin.assistant.ui.screen.function.pot.home
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,11 +16,11 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 @HiltViewModel
-class PotViewModel @Inject constructor(
+class PotHomeViewModel @Inject constructor(
     private val potRepo: PotRepo
-) : AbstractViewModel<PotUiState, PotEvent, PotAction>(
+) : AbstractViewModel<PotHomeUiState, PotHomeEvent, PotHomeAction>(
     initialState = run {
-        PotUiState()
+        PotHomeUiState()
     }
 ) {
 
@@ -37,21 +37,21 @@ class PotViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    override fun handleAction(action: PotAction) {
+    override fun handleAction(action: PotHomeAction) {
         when (action) {
-            is PotAction.BeginChallengeLevelJob -> handleBeginChallengeLevel(action)
-            is PotAction.BeginChallengeBossJob -> handleBeginChallengeBoss(action)
-            PotAction.EndJob -> handleEndJob()
-            PotAction.RefreshPotInfo -> handleRefreshPotIndex()
-            PotAction.BeginAdventureJob -> handleBeginAdventure()
-            PotAction.HideMysteryDialog -> handleHideMysteryDialog()
-            PotAction.ShowMysteryDialog -> handleShowMysteryDialog()
-            is PotAction.SwitchMystery -> handleSwitchMystery(action)
-            is PotAction.Decompose -> handleDecompose(action)
-            is PotAction.Equip -> handleEquip(action)
-            is PotAction.GetAward -> handleGetAward(action)
-            is PotAction.UpgradeSlot -> handleUpgradeSlot(action)
-            PotAction.HideBottomSheet -> handleHideBottomSheet()
+            is PotHomeAction.BeginChallengeLevelJob -> handleBeginChallengeLevel(action)
+            is PotHomeAction.BeginChallengeBossJob -> handleBeginChallengeBoss(action)
+            PotHomeAction.EndJob -> handleEndJob()
+            PotHomeAction.RefreshPotInfo -> handleRefreshPotIndex()
+            PotHomeAction.BeginAdventureJob -> handleBeginAdventure()
+            PotHomeAction.HideMysteryDialog -> handleHideMysteryDialog()
+            PotHomeAction.ShowMysteryDialog -> handleShowMysteryDialog()
+            is PotHomeAction.SwitchMystery -> handleSwitchMystery(action)
+            is PotHomeAction.Decompose -> handleDecompose(action)
+            is PotHomeAction.Equip -> handleEquip(action)
+            is PotHomeAction.GetAward -> handleGetAward(action)
+            is PotHomeAction.UpgradeSlot -> handleUpgradeSlot(action)
+            PotHomeAction.HideBottomSheet -> handleHideBottomSheet()
         }
     }
 
@@ -62,9 +62,9 @@ class PotViewModel @Inject constructor(
         receivePotIndex()
     }
 
-    private fun handleSwitchMystery(action: PotAction.SwitchMystery) {
+    private fun handleSwitchMystery(action: PotHomeAction.SwitchMystery) {
         when (val mysteryDialogState = state.mysteryDialogState) {
-            is PotUiState.MysteryDialogState.Show -> mutableStateFlow.update {
+            is PotHomeUiState.MysteryDialogState.Show -> mutableStateFlow.update {
                 it.copy(mysteryDialogState = mysteryDialogState.copy(curMysteryId = action.mysteryId))
             }
 
@@ -82,7 +82,7 @@ class PotViewModel @Inject constructor(
         }
     }
 
-    private fun handleUpgradeSlot(action: PotAction.UpgradeSlot) {
+    private fun handleUpgradeSlot(action: PotHomeAction.UpgradeSlot) {
         job?.cancel()
         job = viewModelScope.launch {
             mutableStateFlow.update {
@@ -120,14 +120,14 @@ class PotViewModel @Inject constructor(
         }
     }
 
-    private fun handleGetAward(action: PotAction.GetAward) {
+    private fun handleGetAward(action: PotHomeAction.GetAward) {
         viewModelScope.launch {
             val getAwardResponse = potRepo.getAward(action.type)
-            sendEvent(PotEvent.ShowToast("领取 ${getAwardResponse.award}"))
+            sendEvent(PotHomeEvent.ShowToast("领取 ${getAwardResponse.award}"))
         }
     }
 
-    private fun handleEquip(action: PotAction.Equip) {
+    private fun handleEquip(action: PotHomeAction.Equip) {
         viewModelScope.launch {
             mutableStateFlow.update {
                 it.copy(loadingDialogState = LoadingDialogState.Loading("正在装备"))
@@ -138,7 +138,7 @@ class PotViewModel @Inject constructor(
                     it.copy(
                         viewState = ViewState.Success(equipResult.toPotInfo()),
                         logs = it.logs.plus("装备 ${equipResult.msg}"),
-                        undisposedDialogState = PotUiState.UndisposedDialogState.Hide,
+                        undisposedDialogState = PotHomeUiState.UndisposedDialogState.Hide,
                     )
                 }
             } else {
@@ -150,7 +150,7 @@ class PotViewModel @Inject constructor(
         }
     }
 
-    private fun handleDecompose(action: PotAction.Decompose) {
+    private fun handleDecompose(action: PotHomeAction.Decompose) {
         viewModelScope.launch {
             mutableStateFlow.update {
                 it.copy(loadingDialogState = LoadingDialogState.Loading("正在分解"))
@@ -161,7 +161,7 @@ class PotViewModel @Inject constructor(
                     it.copy(
                         viewState = ViewState.Success(decomposeResult.toPotInfo()),
                         logs = it.logs.plus("分解 ${decomposeResult.msg}"),
-                        undisposedDialogState = PotUiState.UndisposedDialogState.Hide,
+                        undisposedDialogState = PotHomeUiState.UndisposedDialogState.Hide,
                     )
                 }
             } else {
@@ -175,13 +175,13 @@ class PotViewModel @Inject constructor(
         }
     }
 
-    private fun handleBeginChallengeBoss(action: PotAction.BeginChallengeBossJob) {
+    private fun handleBeginChallengeBoss(action: PotHomeAction.BeginChallengeBossJob) {
         job?.cancel()
         job = viewModelScope.launch {
             mutableStateFlow.update {
                 it.copy(
                     jobbing = true,
-                    mysteryDialogState = PotUiState.MysteryDialogState.Hide,
+                    mysteryDialogState = PotHomeUiState.MysteryDialogState.Hide,
                     logs = listOf(),
                     showBottomSheet = true,
                 )
@@ -206,7 +206,7 @@ class PotViewModel @Inject constructor(
                         mutableStateFlow.update {
                             it.copy(
                                 logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"),
-                                undisposedDialogState = PotUiState.UndisposedDialogState.Show(
+                                undisposedDialogState = PotHomeUiState.UndisposedDialogState.Show(
                                     challengeResponse.undisposed[0]
                                 )
                             )
@@ -225,27 +225,27 @@ class PotViewModel @Inject constructor(
 
     private fun handleHideMysteryDialog() {
         mutableStateFlow.update {
-            it.copy(mysteryDialogState = PotUiState.MysteryDialogState.Hide)
+            it.copy(mysteryDialogState = PotHomeUiState.MysteryDialogState.Hide)
         }
     }
 
     private fun handleShowMysteryDialog() {
         viewModelScope.launch {
             mutableStateFlow.update {
-                it.copy(mysteryDialogState = PotUiState.MysteryDialogState.Loading)
+                it.copy(mysteryDialogState = PotHomeUiState.MysteryDialogState.Loading)
             }
             val mysteryResponse = potRepo.queryMystery()
             if (mysteryResponse.result != 0) {
                 mutableStateFlow.update {
-                    it.copy(mysteryDialogState = PotUiState.MysteryDialogState.Hide)
+                    it.copy(mysteryDialogState = PotHomeUiState.MysteryDialogState.Hide)
                 }
-                sendEvent(PotEvent.ShowToast("${mysteryResponse.msg}"))
+                sendEvent(PotHomeEvent.ShowToast("${mysteryResponse.msg}"))
                 return@launch
             }
             val map = mysteryResponse.mysteries.associateBy { it.mysteryId }
             mutableStateFlow.update {
                 it.copy(
-                    mysteryDialogState = PotUiState.MysteryDialogState.Show(
+                    mysteryDialogState = PotHomeUiState.MysteryDialogState.Show(
                         curMysteryId = map.firstNotNullOf { entry -> entry.key },
                         mysteries = map,
                     )
@@ -254,7 +254,7 @@ class PotViewModel @Inject constructor(
         }
     }
 
-    private fun handleBeginChallengeLevel(action: PotAction.BeginChallengeLevelJob) {
+    private fun handleBeginChallengeLevel(action: PotHomeAction.BeginChallengeLevelJob) {
         job?.cancel()
         job = viewModelScope.launch {
             mutableStateFlow.update {
@@ -285,7 +285,7 @@ class PotViewModel @Inject constructor(
                         mutableStateFlow.update {
                             it.copy(
                                 logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"),
-                                undisposedDialogState = PotUiState.UndisposedDialogState.Show(
+                                undisposedDialogState = PotHomeUiState.UndisposedDialogState.Show(
                                     challengeResponse.undisposed[0]
                                 ),
                             )
@@ -346,7 +346,7 @@ class PotViewModel @Inject constructor(
                             it.copy(
                                 viewState = ViewState.Success(adventureResponse.toPotInfo()),
                                 logs = it.logs.plus("请处理装备 ${undisposed.name}"),
-                                undisposedDialogState = PotUiState.UndisposedDialogState.Show(
+                                undisposedDialogState = PotHomeUiState.UndisposedDialogState.Show(
                                     undisposed
                                 )
                             )
@@ -394,9 +394,9 @@ class PotViewModel @Inject constructor(
             if (indexResponse.result == 0) {
                 val potInfo = indexResponse.toPotInfo()
                 val dialogState = if (potInfo.undisposed.isNotEmpty()) {
-                    PotUiState.UndisposedDialogState.Show(potInfo.undisposed[0])
+                    PotHomeUiState.UndisposedDialogState.Show(potInfo.undisposed[0])
                 } else {
-                    PotUiState.UndisposedDialogState.Hide
+                    PotHomeUiState.UndisposedDialogState.Hide
                 }
                 mutableStateFlow.update {
                     it.copy(

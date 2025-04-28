@@ -1,6 +1,6 @@
 package io.github.merlin.assistant.data.network.response
 
-import io.github.merlin.assistant.ui.screen.function.pot.PotUiState
+import io.github.merlin.assistant.ui.screen.function.pot.home.PotHomeUiState
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -66,8 +66,8 @@ data class PotResponse(
     val addBlessing: Int?,
 ) {
 
-    fun toPotInfo(): PotUiState.PotDetailState {
-        return PotUiState.PotDetailState(
+    fun toPotInfo(): PotHomeUiState.PotDetailState {
+        return PotHomeUiState.PotDetailState(
             expLevel = expLevel ?: 0,
             exp = exp ?: 0,
             nextExp = nextExp ?: 0,
@@ -170,3 +170,30 @@ data class ViewPackResponse(
     @SerialName("goods_info")
     val goodsInfo: List<GoodsInfo>?,
 )
+
+@Serializable
+data class QueryExchangeResponse(
+    val result: Int,
+    val msg: String?,
+    val exchanges: List<Exchange> = listOf(),
+) {
+
+    @Serializable
+    data class Exchange(
+        val id: Int,
+        @SerialName("goods_id")
+        val goodsId: Int,
+        val desc: String,
+        val exchanged: Int,
+        val award: Award,
+        val goodsInfo: GoodsInfo? = null,
+    ) {
+
+        @Serializable
+        data class Award(
+            val attrs: List<Nothing> = listOf(),
+            val items: List<GoodsInfo> = listOf(),
+        )
+
+    }
+}

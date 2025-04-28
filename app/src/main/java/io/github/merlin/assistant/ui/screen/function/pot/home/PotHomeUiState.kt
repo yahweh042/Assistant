@@ -1,4 +1,4 @@
-package io.github.merlin.assistant.ui.screen.function.pot
+package io.github.merlin.assistant.ui.screen.function.pot.home
 
 import io.github.merlin.assistant.data.local.model.PotSettings
 import io.github.merlin.assistant.data.network.response.MysteryResponse
@@ -6,7 +6,7 @@ import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 
-data class PotUiState(
+data class PotHomeUiState(
     val logs: List<String> = listOf(),
     val viewState: ViewState<PotDetailState> = ViewState.Loading,
     val mysteryDialogState: MysteryDialogState = MysteryDialogState.Hide,

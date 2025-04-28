@@ -66,6 +66,7 @@ data class ShopResponse(
         "6" -> kingMedal
         "8" -> doushenMedal
         "41" -> skinPoint
+        "53" -> potWorldGold
         else -> 0
     }
     

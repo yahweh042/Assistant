@@ -25,7 +25,7 @@ data class GoodsInfo(
     @SerialName("goods_validity")
     val goodsValidity: String,
     @SerialName("icon_id")
-    val iconId: Int,
+    val iconId: Long,
     @SerialName("id")
     val id: Int,
     @SerialName("name")

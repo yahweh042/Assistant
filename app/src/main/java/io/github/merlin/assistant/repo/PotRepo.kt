@@ -2,13 +2,16 @@ package io.github.merlin.assistant.repo
 
 import io.github.merlin.assistant.data.local.LocalDataSource
 import io.github.merlin.assistant.data.local.model.PotSettings
+import io.github.merlin.assistant.data.network.response.BasicResponse
 import io.github.merlin.assistant.data.network.response.FightArenaResponse
 import io.github.merlin.assistant.data.network.response.GetAwardResponse
+import io.github.merlin.assistant.data.network.response.GoodsInfo
 import io.github.merlin.assistant.data.network.response.MysteryResponse
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.data.network.response.QueryArenaResponse
 import io.github.merlin.assistant.data.network.response.ViewPackResponse
 import io.github.merlin.assistant.data.network.service.PotService
+import io.github.merlin.assistant.repo.model.QueryExchangeResult
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -69,4 +72,26 @@ class PotRepo @Inject constructor(
     suspend fun fightArena(opp: Int): FightArenaResponse = potService.fightArena(opp)
 
     suspend fun viewPack(): ViewPackResponse = potService.viewPack()
+
+    suspend fun queryExchange(): QueryExchangeResult {
+        val goodsInfoMap = mutableMapOf<Int, GoodsInfo>()
+        val viewPackResponse = viewPack()
+        if (viewPackResponse.result == 0) {
+            viewPackResponse.goodsInfo?.forEach { goodsInfo ->
+                goodsInfoMap[goodsInfo.id] = goodsInfo
+            }
+        }
+        val queryExchangeResponse = potService.queryExchange()
+        return if (queryExchangeResponse.result == 0) {
+            val exchange = queryExchangeResponse.exchanges.map {
+                it.copy(goodsInfo = goodsInfoMap[it.goodsId])
+            }
+            return QueryExchangeResult.Success(exchange)
+        } else {
+            return QueryExchangeResult.Error("${queryExchangeResponse.msg}")
+        }
+    }
+
+    suspend fun mysteryExchange(id: Int): BasicResponse = potService.mysteryExchange(id)
+
 }

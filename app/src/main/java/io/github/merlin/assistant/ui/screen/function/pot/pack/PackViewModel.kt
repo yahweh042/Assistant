@@ -22,27 +22,37 @@ class PackViewModel @Inject constructor(
 ) {
 
     init {
-        viewPack()
+        viewModelScope.launch {
+            viewPack()
+        }
     }
 
-    private fun viewPack() {
-        viewModelScope.launch {
-            val viewPackResponse = potRepo.viewPack()
-            if (viewPackResponse.result == 0 && viewPackResponse.goodsInfo?.isNotEmpty() == true) {
-                mutableStateFlow.update {
-                    it.copy(viewState = ViewState.Success(viewPackResponse.goodsInfo))
-                }
-            } else {
-                mutableStateFlow.update {
-                    it.copy(viewState = ViewState.Error("${viewPackResponse.msg}"))
-                }
+    private suspend fun viewPack() {
+        val viewPackResponse = potRepo.viewPack()
+        if (viewPackResponse.result == 0 && viewPackResponse.goodsInfo?.isNotEmpty() == true) {
+            mutableStateFlow.update {
+                it.copy(viewState = ViewState.Success(viewPackResponse.goodsInfo))
+            }
+        } else {
+            mutableStateFlow.update {
+                it.copy(viewState = ViewState.Error("${viewPackResponse.msg}"))
             }
         }
     }
 
     override fun handleAction(action: PackAction) {
         when (action) {
+             PackAction.RetryViewPack -> handleRetryViewPack(action)
             is PackAction.UseGoods -> handleUseGoods(action)
+        }
+    }
+
+    private fun handleRetryViewPack(action: PackAction) {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(viewState = ViewState.Loading)
+            }
+            viewPack()
         }
     }
 
@@ -51,7 +61,16 @@ class PackViewModel @Inject constructor(
             mutableStateFlow.update {
                 it.copy(loadingDialogState = LoadingDialogState.Loading("使用中"))
             }
-            storageService.use(action.goodsInfo.id)
+            val useResponse = storageService.use(action.goodsInfo.id)
+            if (useResponse.result == 0) {
+                viewPack()
+                sendEvent(PackEvent.ShowToast("使用成功"))
+            } else {
+                sendEvent(PackEvent.ShowToast("使用失败 ${useResponse.msg}"))
+            }
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Nothing)
+            }
         }
     }
 
