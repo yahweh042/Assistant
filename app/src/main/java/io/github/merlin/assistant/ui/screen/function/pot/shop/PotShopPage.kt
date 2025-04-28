@@ -25,7 +25,7 @@ fun PotShopPage(
     paddingValues: PaddingValues
 ) {
 
-    val options = remember { mutableStateListOf("每日", "每月", "兑换") }
+    val options = remember { mutableStateListOf("每日", "每月") }
     val pagerState = rememberPagerState { options.size }
     val scope = rememberCoroutineScope()
 

@@ -31,7 +31,7 @@ class PackViewModel @Inject constructor(
         val viewPackResponse = potRepo.viewPack()
         if (viewPackResponse.result == 0 && viewPackResponse.goodsInfo?.isNotEmpty() == true) {
             mutableStateFlow.update {
-                it.copy(viewState = ViewState.Success(viewPackResponse.goodsInfo))
+                it.copy(viewState = ViewState.Success(viewPackResponse.goodsInfo.sortedBy { it.id }))
             }
         } else {
             mutableStateFlow.update {
@@ -42,12 +42,25 @@ class PackViewModel @Inject constructor(
 
     override fun handleAction(action: PackAction) {
         when (action) {
-             PackAction.RetryViewPack -> handleRetryViewPack(action)
+            PackAction.RetryViewPack -> handleRetryViewPack()
             is PackAction.UseGoods -> handleUseGoods(action)
+            PackAction.PullToRefresh -> handlePullToRefresh()
         }
     }
 
-    private fun handleRetryViewPack(action: PackAction) {
+    private fun handlePullToRefresh() {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(isRefreshing = true)
+            }
+            viewPack()
+            mutableStateFlow.update {
+                it.copy(isRefreshing = false)
+            }
+        }
+    }
+
+    private fun handleRetryViewPack() {
         viewModelScope.launch {
             mutableStateFlow.update {
                 it.copy(viewState = ViewState.Loading)

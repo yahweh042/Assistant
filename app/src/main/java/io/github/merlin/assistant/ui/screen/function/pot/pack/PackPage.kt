@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
@@ -20,8 +21,12 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -47,8 +52,8 @@ fun PackPage(
     val viewState = state.viewState
     val context = LocalContext.current
 
-    LaunchedEvent(viewModel=viewModel) { event ->
-        when(event) {
+    LaunchedEvent(viewModel = viewModel) { event ->
+        when (event) {
             is PackEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT).show()
         }
     }
@@ -64,6 +69,8 @@ fun PackPage(
             is ViewState.Success<List<GoodsInfo>> -> PackContent(
                 goodsInfos = viewState.data,
                 paddingValues = paddingValues,
+                isRefreshing = state.isRefreshing,
+                onRefresh = { viewModel.trySendAction(PackAction.PullToRefresh) },
                 onUseGoods = { viewModel.trySendAction(PackAction.UseGoods(it)) }
             )
         }
@@ -73,67 +80,88 @@ fun PackPage(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PackContent(
     goodsInfos: List<GoodsInfo>,
     paddingValues: PaddingValues,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
     onUseGoods: (GoodsInfo) -> Unit,
 ) {
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 15.dp),
-        contentPadding = paddingValues,
-        verticalArrangement = Arrangement.spacedBy(5.dp),
+    val state = rememberPullToRefreshState()
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        state = state,
+        indicator = {
+            Indicator(
+                modifier = Modifier
+                    .padding(top = paddingValues.calculateTopPadding())
+                    .align(Alignment.TopCenter),
+                isRefreshing = isRefreshing,
+                state = state,
+            )
+        }
     ) {
-        items(goodsInfos) { goodsInfo ->
-            ElevatedCard(shape = ShapeDefaults.Medium) {
-                ListItem(
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    headlineContent = { Text(text = goodsInfo.name) },
-                    supportingContent = { Text(text = "剩余 ${goodsInfo.num}") },
-                    leadingContent = { GoodsIcon(iconId = goodsInfo.iconId) }
-                )
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 15.dp)
-                        .padding(bottom = 5.dp),
-                    verticalArrangement = Arrangement.spacedBy(3.dp)
-                ) {
-                    if (goodsInfo.goodsDesc.isNotEmpty()) {
-                        Text(text = "详情", style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            text = goodsInfo.goodsDesc,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    if (goodsInfo.effectDesc.isNotEmpty()) {
-                        Text(text = "效果", style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            text = goodsInfo.effectDesc,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                HorizontalDivider(
-                    modifier = Modifier
-                        .height(Dp.Hairline)
-                        .padding(horizontal = 15.dp),
-                )
-                Row(modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp)) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    FilledTonalButton(
-                        enabled = goodsInfo.canUse == 1,
-                        onClick = { onUseGoods(goodsInfo) },
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 15.dp),
+            contentPadding = paddingValues,
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            items(goodsInfos) { goodsInfo ->
+                ElevatedCard(shape = ShapeDefaults.Medium) {
+                    ListItem(
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        headlineContent = { Text(text = goodsInfo.name) },
+                        supportingContent = { Text(text = "剩余 ${goodsInfo.num}") },
+                        leadingContent = { GoodsIcon(iconId = goodsInfo.iconId) }
+                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 15.dp)
+                            .padding(bottom = 5.dp),
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
-                        Text(text = "使用")
+                        if (goodsInfo.goodsDesc.isNotEmpty()) {
+                            Text(text = "详情", style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = goodsInfo.goodsDesc,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (goodsInfo.effectDesc.isNotEmpty()) {
+                            Text(text = "效果", style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = goodsInfo.effectDesc,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .height(Dp.Hairline)
+                            .padding(horizontal = 15.dp),
+                    )
+                    Row(modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp)) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        FilledTonalButton(
+                            enabled = goodsInfo.canUse == 1,
+                            onClick = { onUseGoods(goodsInfo) },
+                        ) {
+                            Text(text = "使用")
+                        }
                     }
                 }
             }
         }
     }
+
 
 }

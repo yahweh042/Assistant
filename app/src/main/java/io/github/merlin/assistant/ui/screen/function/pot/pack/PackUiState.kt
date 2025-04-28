@@ -5,6 +5,7 @@ import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 
 data class PackUiState(
+    val isRefreshing: Boolean = false,
     val viewState: ViewState<List<GoodsInfo>> = ViewState.Loading,
     val loadingDialogState: LoadingDialogState = LoadingDialogState.Nothing,
 )

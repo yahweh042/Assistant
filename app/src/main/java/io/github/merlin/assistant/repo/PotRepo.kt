@@ -85,7 +85,7 @@ class PotRepo @Inject constructor(
         return if (queryExchangeResponse.result == 0) {
             val exchange = queryExchangeResponse.exchanges.map {
                 it.copy(goodsInfo = goodsInfoMap[it.goodsId])
-            }
+            }.sortedBy { it.id }
             return QueryExchangeResult.Success(exchange)
         } else {
             return QueryExchangeResult.Error("${queryExchangeResponse.msg}")
