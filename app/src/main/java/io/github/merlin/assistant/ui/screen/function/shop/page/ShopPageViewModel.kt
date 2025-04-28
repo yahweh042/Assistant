@@ -1,7 +1,9 @@
 package io.github.merlin.assistant.ui.screen.function.shop.page
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.repo.ShopRepo
 import io.github.merlin.assistant.ui.base.AbstractViewModel
@@ -9,17 +11,27 @@ import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class ShopPageViewModel @Inject constructor(
-    private val shopRepo: ShopRepo,
-    private val stateHandle: SavedStateHandle
+@AssistedFactory
+interface ShopPageViewModelFactory {
+    fun create(type: String): ShopPageViewModel
+}
+
+@HiltViewModel(assistedFactory = ShopPageViewModelFactory::class)
+class ShopPageViewModel @AssistedInject constructor(
+    @Assisted val type: String,
+    private val shopRepo: ShopRepo
 ) : AbstractViewModel<ShopPageUiState, ShopPageEvent, ShopPageAction>(
     initialState = run {
         ShopPageUiState()
     }
 ) {
+
+    init {
+        viewModelScope.launch {
+            viewShop(type)
+        }
+    }
 
     override fun handleAction(action: ShopPageAction) {
         when (action) {

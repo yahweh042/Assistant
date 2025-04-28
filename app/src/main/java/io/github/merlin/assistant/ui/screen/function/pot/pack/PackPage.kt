@@ -71,7 +71,7 @@ fun PackPage(
                 paddingValues = paddingValues,
                 isRefreshing = state.isRefreshing,
                 onRefresh = { viewModel.trySendAction(PackAction.PullToRefresh) },
-                onUseGoods = { viewModel.trySendAction(PackAction.UseGoods(it)) }
+                onUseGoods = { viewModel.trySendAction(PackAction.UseGoods(it)) },
             )
         }
     }

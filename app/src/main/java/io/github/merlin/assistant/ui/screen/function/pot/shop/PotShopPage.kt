@@ -3,6 +3,7 @@ package io.github.merlin.assistant.ui.screen.function.pot.shop
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -30,11 +31,10 @@ fun PotShopPage(
     val scope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier
-            .padding(paddingValues),
+        modifier = Modifier.padding(paddingValues),
     ) {
 
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.padding(horizontal = 15.dp)) {
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()) {
             options.forEachIndexed { index, label ->
                 SegmentedButton(
                     shape = SegmentedButtonDefaults.itemShape(index, options.size),

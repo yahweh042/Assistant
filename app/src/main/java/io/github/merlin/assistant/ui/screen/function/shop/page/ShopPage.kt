@@ -54,14 +54,17 @@ fun ShopPage(
     contentPadding: PaddingValues,
 ) {
 
-    val viewModel: ShopPageViewModel = hiltViewModel(key = "shop_page_${shopType}")
+    val viewModel =
+        hiltViewModel<ShopPageViewModel, ShopPageViewModelFactory>(key = "shop_page_${shopType}") {
+            it.create(shopType)
+        }
     val context = LocalContext.current
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
     val viewState = state.viewState
 
-    LaunchedEffect(Unit) {
-        viewModel.trySendAction(ShopPageAction.RefreshShop(shopType))
-    }
+//    LaunchedEffect(Unit) {
+//        viewModel.trySendAction(ShopPageAction.RefreshShop(shopType))
+//    }
 
     LaunchedEvent(viewModel = viewModel) { event ->
         when (event) {
