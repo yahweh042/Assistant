@@ -31,10 +31,14 @@ fun PotShopPage(
     val scope = rememberCoroutineScope()
 
     Column(
-        modifier = Modifier.padding(paddingValues),
+        modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
     ) {
 
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.padding(horizontal = 15.dp).fillMaxWidth()) {
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .padding(horizontal = 15.dp)
+                .fillMaxWidth()
+        ) {
             options.forEachIndexed { index, label ->
                 SegmentedButton(
                     shape = SegmentedButtonDefaults.itemShape(index, options.size),

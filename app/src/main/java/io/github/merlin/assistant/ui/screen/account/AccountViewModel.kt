@@ -48,11 +48,13 @@ class AccountViewModel @Inject constructor(
 
     private fun handleUpdateToken(action: AccountAction) {
         viewModelScope.launch {
-            val dialogState = state.editAccountDialogState
-            when (dialogState) {
+            when (val dialogState = state.editAccountDialogState) {
                 AccountUiState.EditAccountDialogState.Hide -> Unit
                 is AccountUiState.EditAccountDialogState.Show -> {
                     accountRepo.insertAccount(dialogState.account)
+                    mutableStateFlow.update {
+                        it.copy(editAccountDialogState = AccountUiState.EditAccountDialogState.Hide)
+                    }
                 }
             }
         }
@@ -60,8 +62,7 @@ class AccountViewModel @Inject constructor(
 
     private fun handleChangeToken(action: AccountAction.ChangeToken) {
         viewModelScope.launch {
-            val dialogState = state.editAccountDialogState
-            when (dialogState) {
+            when (val dialogState = state.editAccountDialogState) {
                 AccountUiState.EditAccountDialogState.Hide -> Unit
                 is AccountUiState.EditAccountDialogState.Show -> mutableStateFlow.update {
                     it.copy(

@@ -141,7 +141,7 @@ fun CommodityInfoDialog(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onHideDialog }) {
+                TextButton(onClick = { onHideDialog() }) {
                     Text(text = "取消")
                 }
             },

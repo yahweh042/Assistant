@@ -114,10 +114,10 @@ class ShopPageViewModel @AssistedInject constructor(
     }
 
     private suspend fun viewShop(shopType: String) {
-        val storageGoodsInfo = shopRepo.storageGoodsInfo()
+        val storageGoodsInfo = shopRepo.storageGoodsNum()
         val shopResponse = shopRepo.viewShop(shopType)
         if (shopResponse.result == 0) {
-            val money = shopResponse.money(shopType) ?: 0
+            val money = shopResponse.money(shopType, storageGoodsInfo) ?: 0
             val commodityInfo = shopResponse.commodityInfo?.map {
                 it.copy(storageNum = storageGoodsInfo[it.goodsId] ?: 0)
             } ?: listOf()

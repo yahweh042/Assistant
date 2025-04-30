@@ -81,7 +81,8 @@ fun PotHomePage(
 
     LaunchedEvent(viewModel = viewModel) { event ->
         when (event) {
-            is PotHomeEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT).show()
+            is PotHomeEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -454,12 +455,16 @@ fun EquipmentCard(equipment: PotResponse.Equipment) {
             .padding(0.dp, 5.dp),
     ) {
         Column(modifier = Modifier.padding(15.dp)) {
+            Text(text = equipment.name, fontWeight = FontWeight.Bold)
+            Row(modifier = Modifier.padding(vertical = 5.dp)) {
+                HorizontalDivider(modifier = Modifier.height(Dp.Hairline))
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(verticalArrangement = Arrangement.Center) {
                     when {
                         equipment.type >= 1 && equipment.type <= 3 -> WeaponIcon(
                             id = equipment.refId,
-                            level = equipment.refLevel
+                            level = equipment.refLevel,
                         )
 
                         equipment.type >= 4 && equipment.type <= 5 -> SkillIcon(
@@ -476,7 +481,6 @@ fun EquipmentCard(equipment: PotResponse.Equipment) {
                     }
                 }
                 Column(modifier = Modifier.padding(start = 5.dp)) {
-                    Text(text = equipment.name, fontWeight = FontWeight.Bold)
                     Text(text = "等级：${equipment.level}")
                     Text(text = "类型：${equipment.type}")
                     Text(text = "品质：${equipment.quality}")

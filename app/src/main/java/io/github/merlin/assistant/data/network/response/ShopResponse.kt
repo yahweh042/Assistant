@@ -57,17 +57,27 @@ data class ShopResponse(
     @SerialName("winpoint")
     val winPoint: Int?,
 ) {
-    
-    fun money(type: String): Int?  = when(type) {
+
+    fun money(type: String, storageGoodsInfo: Map<Int, Int>): Int? = when (type) {
         "1" -> doudou
         "3" -> winPoint
         "4" -> servantCash
         "5" -> cavePoint
         "6" -> kingMedal
         "8" -> doushenMedal
+        "26" -> gzwulinScore
         "41" -> skinPoint
         "53" -> potWorldGold
+        "54" -> storageGoodsInfo[181448] ?: 0
+        "42" -> sxPoint
+        "43" -> sxPoint2
+        "51" -> beastsBookPoint1
+        "52" -> beastsBookPoint2
+        "48" -> storageGoodsInfo[181175] ?: 0
+        "16" -> storageGoodsInfo[100390] ?: 0
+        "17" -> storageGoodsInfo[100391] ?: 0
+        "25" -> storageGoodsInfo[100437] ?: 0
         else -> 0
     }
-    
+
 }

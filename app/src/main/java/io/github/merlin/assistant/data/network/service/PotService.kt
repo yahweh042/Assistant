@@ -129,6 +129,7 @@ class PotService @Inject constructor(
     suspend fun mysteryExchange(id: Int): BasicResponse {
         val params = mapOf(
             "op" to "mystery_exchange",
+            "id" to id,
         )
         return networkDataSource.request<BasicResponse>("pot_world", params)
     }

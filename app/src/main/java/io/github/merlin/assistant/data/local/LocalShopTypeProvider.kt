@@ -18,6 +18,13 @@ object LocalShopTypeProvider {
                 ShopType(type = "16", name = "圣物"),
                 ShopType(type = "17", name = "高级精华"),
                 ShopType(type = "25", name = "特级精华"),
+                ShopType(type = "26", name = "观众杂货铺"),
+                ShopType(type = "42", name = "道心"),
+                ShopType(type = "43", name = "道印"),
+                ShopType(type = "48", name = "鹅鹅快跑"),
+                ShopType(type = "51", name = "史诗卡片"),
+                ShopType(type = "52", name = "传说卡片"),
+
             )
         )
     }
