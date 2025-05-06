@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.data.network.service.MailService
 import io.github.merlin.assistant.ui.base.AbstractViewModel
-import io.github.merlin.assistant.ui.base.LoadingDialog
 import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.flow.update
@@ -20,33 +19,49 @@ class MailViewModel @Inject constructor(
     }
 ) {
     init {
-        queryMails()
+        viewModelScope.launch {
+            queryMails()
+        }
     }
 
-    private fun queryMails(type: Int = state.type) {
-        viewModelScope.launch {
+    private suspend fun queryMails(type: Int = state.type) {
+        val mailResponse = mailService.queryMails(type)
+        if (mailResponse.result == 0) {
             mutableStateFlow.update {
-                it.copy(viewState = ViewState.Loading, type = type)
+                it.copy(viewState = ViewState.Success(MailUiState.MailState(mailResponse.mails.reversed())))
             }
-            val mailResponse = mailService.queryMails(type)
-            if (mailResponse.result == 0) {
-                mutableStateFlow.update {
-                    it.copy(viewState = ViewState.Success(MailUiState.MailState(mailResponse.mails.reversed())))
-                }
-            } else {
-                mutableStateFlow.update {
-                    it.copy(viewState = ViewState.Error(mailResponse.msg ?: "未知错误"))
-                }
+        } else {
+            mutableStateFlow.update {
+                it.copy(viewState = ViewState.Error(mailResponse.msg ?: "未知错误"))
             }
         }
     }
 
     override fun handleAction(action: MailAction) {
         when (action) {
-            is MailAction.QueryMails -> queryMails(action.type)
+            is MailAction.QueryMails -> handleQueryMails(action)
+            MailAction.RetryQueryMails -> handleRetryQueryMails()
             is MailAction.OpenMail -> openMail(action.id)
             is MailAction.GetReward -> getReward(action.id)
             MailAction.HideSheet -> hideSheet()
+        }
+    }
+
+    private fun handleQueryMails(action: MailAction.QueryMails) {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(type = action.type)
+            }
+            queryMails(action.type)
+        }
+    }
+
+    private fun handleRetryQueryMails() {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(viewState = ViewState.Loading)
+            }
+            queryMails()
         }
     }
 
@@ -57,6 +72,7 @@ class MailViewModel @Inject constructor(
             }
             val response = mailService.getReward(id)
             if (response.result == 0) {
+                queryMails()
                 mutableStateFlow.update {
                     it.copy(
                         loadingDialogState = LoadingDialogState.Nothing,

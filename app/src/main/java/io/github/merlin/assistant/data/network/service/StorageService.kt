@@ -25,4 +25,13 @@ class StorageService @Inject constructor(
         return networkDataSource.request<BasicResponse>("storage", params)
     }
 
+    suspend fun batch(id: Int, num: Int): BasicResponse {
+        val params = mapOf(
+            "op" to "batch",
+            "id" to id,
+            "num" to num,
+        )
+        return networkDataSource.request<BasicResponse>("storage", params)
+    }
+
 }

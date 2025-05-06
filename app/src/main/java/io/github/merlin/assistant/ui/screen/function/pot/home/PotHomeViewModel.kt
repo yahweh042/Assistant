@@ -364,7 +364,7 @@ class PotHomeViewModel @Inject constructor(
         if (!potSettings.attrFilter) {
             return false
         }
-        if (undisposed.level == 30) {
+        if (undisposed.level > 30) {
             return false
         }
         val subAttrs = undisposed.subAttrs

@@ -40,4 +40,12 @@ data class GoodsInfo(
     val targetUrl: String,
     @SerialName("type")
     val type: Int
-)
+) {
+
+    val canOperate: Boolean
+        get() = canExchange || canUse == 1 || canUseBatch == 1 || canAbandon == 1
+
+    val canExchange: Boolean
+        get() = targetUrl.startsWith("hf.CommonExchangeCmd")
+
+}

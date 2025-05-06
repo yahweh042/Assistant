@@ -16,6 +16,7 @@ import io.github.merlin.assistant.ui.screen.function.mail.mailDestination
 import io.github.merlin.assistant.ui.screen.function.pot.potDestination
 import io.github.merlin.assistant.ui.screen.function.pot.settings.potSettingsDestination
 import io.github.merlin.assistant.ui.screen.function.shop.shopDestination
+import io.github.merlin.assistant.ui.screen.function.storage.storageDestination
 import io.github.merlin.assistant.ui.screen.home.HOME_ROUTE
 import io.github.merlin.assistant.ui.screen.home.homeDestination
 import io.github.merlin.assistant.ui.screen.login.loginDestination
@@ -26,8 +27,7 @@ fun MainScreen() {
     val navController = rememberNavController()
 
     NavHost(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         navController = navController,
         startDestination = HOME_ROUTE,
         enterTransition = {
@@ -52,6 +52,7 @@ fun MainScreen() {
         jianGeDestination(navController)
         shopDestination(navController)
         mailDestination(navController)
+        storageDestination(navController)
     }
 
 }

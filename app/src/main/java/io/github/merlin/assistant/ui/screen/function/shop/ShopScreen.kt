@@ -1,6 +1,5 @@
 package io.github.merlin.assistant.ui.screen.function.shop
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -57,39 +56,37 @@ fun ShopScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            Column {
-                TopAppBar(
-                    title = {
-                        TopAppBarTab(
-                            shopTypes = state.shopTypes,
-                            currentPage = pagerState.currentPage,
-                            onClick = { scope.launch { pagerState.scrollToPage(it) } }
+            TopAppBar(
+                title = {
+                    TopAppBarTab(
+                        shopTypes = state.shopTypes,
+                        currentPage = pagerState.currentPage,
+                        onClick = { scope.launch { pagerState.scrollToPage(it) } }
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors().copy(
+                    scrolledContainerColor = TopAppBarDefaults.topAppBarColors().scrolledContainerColor.copy(
+                        alpha = 0.95f
+                    )
+                ),
+                scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "",
                         )
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors().copy(
-                        scrolledContainerColor = TopAppBarDefaults.topAppBarColors().scrolledContainerColor.copy(
-                            alpha = 0.95f
-                        )
-                    ),
-                    scrollBehavior = scrollBehavior,
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                                contentDescription = "",
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {}) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "",
-                            )
-                        }
                     }
-                )
-            }
+                },
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "",
+                        )
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         HorizontalPager(state = pagerState) { page ->

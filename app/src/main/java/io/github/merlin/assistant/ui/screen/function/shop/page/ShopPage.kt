@@ -26,7 +26,6 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,10 +60,6 @@ fun ShopPage(
     val context = LocalContext.current
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
     val viewState = state.viewState
-
-//    LaunchedEffect(Unit) {
-//        viewModel.trySendAction(ShopPageAction.RefreshShop(shopType))
-//    }
 
     LaunchedEvent(viewModel = viewModel) { event ->
         when (event) {
