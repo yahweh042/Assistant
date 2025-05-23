@@ -9,5 +9,10 @@ sealed class AccountAction {
 
     data class ChangeToken(val token: String) : AccountAction()
     data object UpdateToken : AccountAction()
-    data object HideEditAccountDialog: AccountAction()
+    data object HideEditAccountDialog : AccountAction()
+
+    data class UpdateCookie(val cookie: String) : AccountAction()
+    data class ConfirmCookie(val cookie: String) : AccountAction()
+    data object HideLoginWithCookieDialog : AccountAction()
+    data object ShowCookieDialog : AccountAction()
 }

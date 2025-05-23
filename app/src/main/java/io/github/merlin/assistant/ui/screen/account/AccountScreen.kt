@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.NoteAdd
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
@@ -69,6 +70,14 @@ fun AccountScreen(
                         )
                     }
                 },
+                actions = {
+                    IconButton(onClick = { viewModel.trySendAction(AccountAction.ShowCookieDialog) }) {
+                        Image(
+                            imageVector = Icons.AutoMirrored.Rounded.NoteAdd,
+                            contentDescription = "",
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -127,8 +136,48 @@ fun AccountScreen(
             onUpdateToken = { viewModel.trySendAction(AccountAction.UpdateToken) },
         )
 
+        LoginWithCookieDialog(
+            state = state.loginWithCookieState,
+            onHideDialog = { viewModel.trySendAction(AccountAction.HideLoginWithCookieDialog) },
+            onUpdateCookie = { viewModel.trySendAction(AccountAction.UpdateCookie(it)) },
+            onConfirmCookie = { viewModel.trySendAction(AccountAction.ConfirmCookie(it)) }
+        )
+
     }
 
+}
+
+@Composable
+fun LoginWithCookieDialog(
+    state: AccountUiState.LoginWithCookieState,
+    onHideDialog: () -> Unit,
+    onUpdateCookie: (String) -> Unit,
+    onConfirmCookie: (String) -> Unit,
+) {
+    when (state) {
+        AccountUiState.LoginWithCookieState.Hide -> Unit
+        is AccountUiState.LoginWithCookieState.Show -> AssistantDialog(
+            onDismissRequest = { onHideDialog() },
+            confirmButton = {
+                TextButton(onClick = { onConfirmCookie(state.cookie) }) {
+                    Text(text = "确认")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onHideDialog() }) {
+                    Text(text = "取消")
+                }
+            },
+            title = { Text(text = "输入Cookie") },
+            text = {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = state.cookie,
+                    onValueChange = { onUpdateCookie(it) },
+                )
+            }
+        )
+    }
 }
 
 @Composable

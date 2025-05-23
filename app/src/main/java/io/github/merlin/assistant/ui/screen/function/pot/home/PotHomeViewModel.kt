@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.repo.PotRepo
 import io.github.merlin.assistant.ui.base.AbstractViewModel
+import io.github.merlin.assistant.ui.base.LoadingDialog
 import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.Job
@@ -181,45 +182,36 @@ class PotHomeViewModel @Inject constructor(
             mutableStateFlow.update {
                 it.copy(
                     jobbing = true,
-                    mysteryDialogState = PotHomeUiState.MysteryDialogState.Hide,
-                    logs = listOf(),
-                    showBottomSheet = true,
+                    loadingDialogState = LoadingDialogState.Loading("挑战中")
                 )
             }
-            val count = AtomicInteger(0)
-            while (true) {
-                val challengeResponse = potRepo.challengeBoss(action.bossId.toString())
-                if (challengeResponse.result != 0) {
-                    mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("未知错误 ${challengeResponse.msg}"))
-                    }
-                    break
-                }
+            val challengeResponse = potRepo.challengeBoss(action.bossId.toString())
+            mutableStateFlow.update {
+                it.copy(
+                    jobbing = false,
+                    loadingDialogState = LoadingDialogState.Nothing,
+                )
+            }
+            if (challengeResponse.result == 0) {
                 mutableStateFlow.update {
                     it.copy(viewState = ViewState.Success(challengeResponse.toPotInfo()))
                 }
                 if (challengeResponse.killed == 1) {
-                    mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战成功"))
-                    }
                     if (challengeResponse.undisposed?.isNotEmpty() == true) {
                         mutableStateFlow.update {
                             it.copy(
-                                logs = it.logs.plus("请处理装备 ${challengeResponse.undisposed[0].name}"),
                                 undisposedDialogState = PotHomeUiState.UndisposedDialogState.Show(
                                     challengeResponse.undisposed[0]
-                                )
+                                ),
                             )
                         }
-                        break
                     }
                 } else {
-                    mutableStateFlow.update {
-                        it.copy(logs = it.logs.plus("第${count.incrementAndGet()}次 挑战失败 ${challengeResponse.msg}"))
-                    }
+                    sendEvent(PotHomeEvent.ShowToast("挑战失败"))
                 }
+            } else {
+                sendEvent(PotHomeEvent.ShowToast(challengeResponse.msg))
             }
-            mutableStateFlow.update { it.copy(jobbing = false) }
         }
     }
 
