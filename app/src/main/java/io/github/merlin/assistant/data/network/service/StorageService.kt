@@ -34,4 +34,21 @@ class StorageService @Inject constructor(
         return networkDataSource.request<BasicResponse>("storage", params)
     }
 
+    suspend fun abandon(id: Int): BasicResponse {
+        val params = mapOf(
+            "op" to "abandon",
+            "id" to id,
+        )
+        return networkDataSource.request<BasicResponse>("storage", params)
+    }
+
+    suspend fun exchange(exId: Int, num: Int): BasicResponse {
+        val params = mapOf(
+            "op" to "exchange",
+            "exid" to exId,
+            "num" to num,
+        )
+        return networkDataSource.request<BasicResponse>("storage", params)
+    }
+
 }

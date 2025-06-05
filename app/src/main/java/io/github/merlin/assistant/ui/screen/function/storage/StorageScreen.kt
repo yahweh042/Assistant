@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import io.github.merlin.assistant.ui.base.TabTextButton
 import io.github.merlin.assistant.ui.screen.function.storage.page.StoragePage
 import kotlinx.coroutines.launch
 
@@ -46,12 +47,11 @@ fun StorageScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         StorageType.entries.forEachIndexed { index, entry ->
-                            TextButton(
-                                onClick = { scope.launch { pagerState.scrollToPage(index) } },
-                                colors = if (index == pagerState.currentPage) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
-                            ) {
-                                Text(text = entry.label)
-                            }
+                            TabTextButton(
+                                text = entry.label,
+                                active = pagerState.currentPage == index,
+                                onClick = { scope.launch { pagerState.scrollToPage(index) } }
+                            )
                         }
                     }
                 },

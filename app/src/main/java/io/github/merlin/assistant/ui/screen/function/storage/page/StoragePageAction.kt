@@ -8,5 +8,6 @@ sealed class StoragePageAction {
 
     data class UseGoods(val goodsInfo: GoodsInfo, val num: Int) : StoragePageAction()
     data class AbandonGoods(val goodsInfo: GoodsInfo): StoragePageAction()
+    data class ExchangeGoods(val goodsInfo: GoodsInfo): StoragePageAction()
 
 }

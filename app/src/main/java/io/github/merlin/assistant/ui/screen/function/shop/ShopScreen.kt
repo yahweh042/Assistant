@@ -8,13 +8,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -30,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import io.github.merlin.assistant.data.local.model.ShopType
 import io.github.merlin.assistant.ui.base.LaunchedEvent
+import io.github.merlin.assistant.ui.base.TabTextButton
 import io.github.merlin.assistant.ui.screen.function.shop.page.ShopPage
 import kotlinx.coroutines.launch
 
@@ -119,12 +117,11 @@ fun TopAppBarTab(
             shopTypes.fastForEachIndexed { index, shopType ->
                 if (shopType.show) {
                     item {
-                        TextButton(
-                            onClick = { onClick(index) },
-                            colors = if (index == currentPage) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
-                        ) {
-                            Text(text = shopType.name)
-                        }
+                        TabTextButton(
+                            text = shopType.name,
+                            active = index == currentPage,
+                            onClick = { onClick(index) }
+                        )
                     }
                 }
             }

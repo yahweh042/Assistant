@@ -68,11 +68,14 @@ fun StoragePage(
             onAbandonGoods = { goodsInfo ->
                 viewModel.trySendAction(StoragePageAction.AbandonGoods(goodsInfo))
             },
+            onExchangeGoods = { goodsInfo ->
+                viewModel.trySendAction(StoragePageAction.ExchangeGoods(goodsInfo))
+            },
         )
 
         is ViewState.Error -> ErrorContent(
             msg = viewState.msg,
-            retry = { },
+            retry = { viewModel.trySendAction(StoragePageAction.RetryView) },
         )
     }
 
@@ -86,6 +89,7 @@ fun StoragePageContent(
     contentPadding: PaddingValues,
     onUseGoods: (GoodsInfo, Int) -> Unit,
     onAbandonGoods: (GoodsInfo) -> Unit,
+    onExchangeGoods: (GoodsInfo) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.padding(horizontal = 15.dp),
@@ -134,13 +138,13 @@ fun StoragePageContent(
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
                         if (goodsInfo.canAbandon == 1) {
-                            FilledTonalButton(onClick = {}) {
+                            FilledTonalButton(onClick = { onAbandonGoods(goodsInfo) }) {
                                 Text(text = "丢弃")
                             }
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         if (goodsInfo.canExchange) {
-                            FilledTonalButton(onClick = {}) {
+                            FilledTonalButton(onClick = { onExchangeGoods(goodsInfo) }) {
                                 Text(text = "兑换")
                             }
                         }
