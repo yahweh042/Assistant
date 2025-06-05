@@ -328,7 +328,7 @@ fun MysteryDialog(
 
     val configuration = LocalConfiguration.current
     val dialogHeight = configuration.screenHeightDp.dp / 2
-    val dialogWidth = configuration.screenWidthDp.dp - 80.dp
+    val dialogWidth = configuration.screenWidthDp.dp - 40.dp
 
     val bosses =
         if (state is PotHomeUiState.MysteryDialogState.Show) state.mysteries[state.curMysteryId]?.bosses

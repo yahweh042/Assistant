@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.BottomSheetDefaults
@@ -71,7 +72,10 @@ fun LogsBottomSheet(
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             contentWindowInsets = { BottomSheetDefaults.windowInsets.only(WindowInsetsSides.Horizontal) },
             dragHandle = { DragHandle(onDismissRequest = animateToDismiss) },
-            shape = ShapeDefaults.Medium,
+            shape = ShapeDefaults.Medium.copy(
+                bottomEnd = CornerSize(0),
+                bottomStart = CornerSize(0),
+            ),
         ) {
             LazyColumn(
                 state = lazyListState,

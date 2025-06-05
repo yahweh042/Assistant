@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,13 +13,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.NoteAdd
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -30,6 +31,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -71,21 +75,10 @@ fun AccountScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.trySendAction(AccountAction.ShowCookieDialog) }) {
-                        Image(
-                            imageVector = Icons.AutoMirrored.Rounded.NoteAdd,
-                            contentDescription = "",
-                        )
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = { Text(text = "添加账号") },
-                icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "") },
-                onClick = {
-                    viewModel.trySendAction(AccountAction.AddAccountButtonClick)
+                    LoginActionMenu(
+                        onCookieLogin = { viewModel.trySendAction(AccountAction.ShowCookieDialog) },
+                        onWebLogin = { viewModel.trySendAction(AccountAction.AddAccountButtonClick) },
+                    )
                 }
             )
         },
@@ -243,5 +236,35 @@ fun EditAccountDialog(
         )
 
     }
+
+}
+
+@Composable
+fun LoginActionMenu(
+    onCookieLogin: () -> Unit,
+    onWebLogin: () -> Unit,
+) {
+
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+
+        IconButton(onClick = { expanded = true }) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Account")
+        }
+
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("Cookie登录") },
+                onClick = { onCookieLogin() }
+            )
+            DropdownMenuItem(
+                text = { Text("网页登录") },
+                onClick = { onWebLogin() }
+            )
+        }
+
+    }
+
 
 }

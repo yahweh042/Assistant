@@ -5,7 +5,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.merlin.assistant.data.network.response.PotResponse
 import io.github.merlin.assistant.repo.PotRepo
 import io.github.merlin.assistant.ui.base.AbstractViewModel
-import io.github.merlin.assistant.ui.base.LoadingDialog
 import io.github.merlin.assistant.ui.base.LoadingDialogState
 import io.github.merlin.assistant.ui.base.ViewState
 import kotlinx.coroutines.Job

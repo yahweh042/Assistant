@@ -26,7 +26,7 @@ fun AssistantDialog(
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
         ),
-        modifier = Modifier.width(configuration.screenWidthDp.dp - 80.dp),
+        modifier = Modifier.width(configuration.screenWidthDp.dp - 40.dp),
         onDismissRequest = onDismissRequest,
         confirmButton = confirmButton,
         dismissButton = dismissButton,

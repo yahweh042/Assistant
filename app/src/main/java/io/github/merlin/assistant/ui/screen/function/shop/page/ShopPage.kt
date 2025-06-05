@@ -43,8 +43,8 @@ import io.github.merlin.assistant.ui.base.GoodsIcon
 import io.github.merlin.assistant.ui.base.LaunchedEvent
 import io.github.merlin.assistant.ui.base.LoadingContent
 import io.github.merlin.assistant.ui.base.LoadingDialog
-import io.github.merlin.assistant.ui.base.NumberTextField
 import io.github.merlin.assistant.ui.base.ShopIcon
+import io.github.merlin.assistant.ui.base.SliderNumberTextField
 import io.github.merlin.assistant.ui.base.ViewState
 
 @Composable
@@ -165,22 +165,21 @@ fun CommodityInfoDialog(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Text(text = dialogState.commodityInfo.goodsDes)
+                    Text(text = dialogState.commodityInfo.goodsDes, modifier = Modifier.height(24.dp))
                     Text(
                         text = "效果",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Text(text = dialogState.commodityInfo.goodsEffect)
+                    Text(text = dialogState.commodityInfo.goodsEffect, modifier = Modifier.height(24.dp))
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Text(
                         text = "数量",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Spacer(modifier = Modifier.weight(1f))
-                    NumberTextField(
+                    SliderNumberTextField(
                         value = dialogState.num,
                         onValueChange = {
                             onUpdateGoodsNum(dialogState.commodityInfo, it)
