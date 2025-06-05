@@ -455,7 +455,7 @@ fun EquipmentCard(equipment: PotResponse.Equipment) {
             .padding(0.dp, 5.dp),
     ) {
         Column(modifier = Modifier.padding(15.dp)) {
-            Text(text = equipment.name, fontWeight = FontWeight.Bold)
+            Text(text = "${equipment.name}[${equipment.refId}]", fontWeight = FontWeight.Bold)
             Row(modifier = Modifier.padding(vertical = 5.dp)) {
                 HorizontalDivider(modifier = Modifier.height(Dp.Hairline))
             }

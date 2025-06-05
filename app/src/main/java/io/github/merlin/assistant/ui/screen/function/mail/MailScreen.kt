@@ -55,6 +55,7 @@ import io.github.merlin.assistant.ui.base.GoodsIcon
 import io.github.merlin.assistant.ui.base.LaunchedEvent
 import io.github.merlin.assistant.ui.base.LoadingContent
 import io.github.merlin.assistant.ui.base.LoadingDialog
+import io.github.merlin.assistant.ui.base.TabTextButton
 import io.github.merlin.assistant.ui.base.ViewState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +73,7 @@ fun MailScreen(
     val context = LocalContext.current
 
     LaunchedEvent(viewModel) { event ->
-        when(event) {
+        when (event) {
             is MailEvent.ShowToast -> Toast.makeText(context, event.msg, Toast.LENGTH_SHORT).show()
         }
     }
@@ -88,18 +89,16 @@ fun MailScreen(
                 ),
                 title = {
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        TextButton(
-                            onClick = { viewModel.trySendAction(MailAction.QueryMails(2)) },
-                            colors = if (state.type == 2) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
-                        ) {
-                            Text(text = "系统邮件")
-                        }
-                        TextButton(
-                            onClick = { viewModel.trySendAction(MailAction.QueryMails(3)) },
-                            colors = if (state.type == 3) ButtonDefaults.elevatedButtonColors() else ButtonDefaults.textButtonColors(),
-                        ) {
-                            Text(text = "好友邮件")
-                        }
+                        TabTextButton(
+                            text = "系统邮件",
+                            active = state.type == 2,
+                            onClick = { viewModel.trySendAction(MailAction.QueryMails(2)) }
+                        )
+                        TabTextButton(
+                            text = "好友邮件",
+                            active = state.type == 3,
+                            onClick = { viewModel.trySendAction(MailAction.QueryMails(3)) }
+                        )
                     }
                 },
                 navigationIcon = {

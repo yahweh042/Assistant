@@ -5,6 +5,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.merlin.assistant.data.network.response.GoodsInfo
 import io.github.merlin.assistant.data.network.service.StorageService
 import io.github.merlin.assistant.ui.base.AbstractViewModel
 import io.github.merlin.assistant.ui.base.LoadingDialogState
@@ -37,28 +38,83 @@ class StoragePageViewModel @AssistedInject constructor(
             StoragePageAction.RetryView -> handleRetryView()
             is StoragePageAction.UseGoods -> handleUseGoods(action)
             is StoragePageAction.AbandonGoods -> handleAbandonGoods(action)
+            is StoragePageAction.ExchangeGoods -> handleExchangeGoods(action)
+        }
+    }
+
+    private fun handleExchangeGoods(action: StoragePageAction.ExchangeGoods) {
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Loading("正在兑换"))
+            }
+            val goodsInfo = action.goodsInfo
+            val exId = goodsInfo.targetUrl.split("|")[1].toInt()
+            val exchangeResponse = storageService.exchange(exId, goodsInfo.num)
+            if (exchangeResponse.result == 0) {
+                view()
+                sendEvent(StoragePageEvent.ShowToast("兑换 ${goodsInfo.name}*${goodsInfo.num}"))
+            } else {
+                sendEvent(StoragePageEvent.ShowToast("兑换失败 ${exchangeResponse.msg}"))
+            }
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Nothing)
+            }
         }
     }
 
     private fun handleAbandonGoods(action: StoragePageAction.AbandonGoods) {
-
+        viewModelScope.launch {
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Loading("正在丢弃"))
+            }
+            val goodsInfo = action.goodsInfo
+            val abandonResponse = storageService.abandon(goodsInfo.id)
+            if (abandonResponse.result == 0) {
+                view()
+                sendEvent(StoragePageEvent.ShowToast("丢弃 ${goodsInfo.name}*${goodsInfo.num}"))
+            } else {
+                sendEvent(StoragePageEvent.ShowToast("丢弃失败 ${abandonResponse.msg}"))
+            }
+            mutableStateFlow.update {
+                it.copy(loadingDialogState = LoadingDialogState.Nothing)
+            }
+        }
     }
 
     private fun handleUseGoods(action: StoragePageAction.UseGoods) {
         viewModelScope.launch {
             mutableStateFlow.update {
-                it.copy(loadingDialogState = LoadingDialogState.Loading("使用中"))
+                it.copy(loadingDialogState = LoadingDialogState.Loading("正在使用"))
             }
-            val batchResponse = storageService.batch(action.goodsInfo.id, action.goodsInfo.num)
-            if (batchResponse.result == 0) {
-                view()
-                sendEvent(StoragePageEvent.ShowToast("使用 ${action.goodsInfo.name}*${action.goodsInfo.num}"))
-            } else {
-                sendEvent(StoragePageEvent.ShowToast("使用失败 ${batchResponse.msg}"))
+            val goodsInfo = action.goodsInfo
+            when {
+                goodsInfo.canUseBatch == 1 -> batchUseGoods(goodsInfo, goodsInfo.num)
+                goodsInfo.canUse == 1 -> singleUseGoods(goodsInfo)
+                else -> sendEvent(StoragePageEvent.ShowToast("使用失败 不支持使用"))
             }
             mutableStateFlow.update {
                 it.copy(loadingDialogState = LoadingDialogState.Nothing)
             }
+        }
+    }
+
+    private suspend fun singleUseGoods(goodsInfo: GoodsInfo) {
+        val useResponse = storageService.use(goodsInfo.id)
+        if (useResponse.result == 0) {
+            view()
+            sendEvent(StoragePageEvent.ShowToast("使用 ${goodsInfo.name}"))
+        } else {
+            sendEvent(StoragePageEvent.ShowToast("使用失败 ${useResponse.msg}"))
+        }
+    }
+
+    private suspend fun batchUseGoods(goodsInfo: GoodsInfo, num: Int) {
+        val batchResponse = storageService.batch(goodsInfo.id, goodsInfo.num)
+        if (batchResponse.result == 0) {
+            view()
+            sendEvent(StoragePageEvent.ShowToast("使用 ${goodsInfo.name}*${goodsInfo.num}"))
+        } else {
+            sendEvent(StoragePageEvent.ShowToast("使用失败 ${batchResponse.msg}"))
         }
     }
 
