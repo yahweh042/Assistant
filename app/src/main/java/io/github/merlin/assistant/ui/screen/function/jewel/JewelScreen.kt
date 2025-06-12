@@ -1,5 +1,7 @@
 package io.github.merlin.assistant.ui.screen.function.jewel
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +19,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -30,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -106,7 +110,7 @@ fun JewelScreen(
                                     )
                                 },
                                 modifier = Modifier
-                                    .menuAnchor()
+                                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
                                     .fillMaxWidth(),
                             )
                             ExposedDropdownMenu(
@@ -166,6 +170,9 @@ fun JewelScreen(
                         )
                         Spacer(modifier = Modifier.height(5.dp))
                         ListItem(
+                            modifier = Modifier
+                                .background(Color.Transparent)
+                                .clickable { viewModel.trySendAction(JewelAction.SwitchBuyVit(!state.jewelSettings.buyVit)) },
                             headlineContent = { Text(text = "是否购买体力") },
                             trailingContent = {
                                 Switch(

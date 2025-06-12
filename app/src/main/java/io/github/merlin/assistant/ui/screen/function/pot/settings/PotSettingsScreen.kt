@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.util.fastCbrt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import io.github.merlin.assistant.ui.base.AssistantDialog
@@ -60,6 +58,7 @@ fun PotSettingsScreen(
         ) {
             Column(modifier = Modifier.padding(paddingValues)) {
                 ListItem(
+                    modifier = Modifier.clickable { viewModel.trySendAction(PotSettingsAction.AttrFilterChange(!state.attrFilter)) },
                     headlineContent = { Text(text = "词条筛选") },
                     supportingContent = { Text(text = "碰到不在配置的词条中的装备自动分解, 多个逗号分隔") },
                     trailingContent = {

@@ -89,7 +89,8 @@ fun PotScreen(
                     paddingValues = paddingValues,
                     showSnackbar = {
                         scope.launch {
-                            hostState.showSnackbar(message = it, withDismissAction = true)
+                            hostState.currentSnackbarData?.dismiss()
+                            hostState.showSnackbar(message = it)
                         }
                     },
                 )

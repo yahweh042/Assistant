@@ -1,10 +1,12 @@
 package io.github.merlin.assistant.ui.base
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -26,12 +28,13 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LogsBottomSheet(
     logs: List<String> = listOf(),
@@ -99,10 +102,16 @@ fun LogsBottomSheet(
 
 @Composable
 fun DragHandle(onDismissRequest: () -> Unit) {
-    Row(modifier = Modifier.padding(top = 15.dp, start = 15.dp, bottom = 5.dp, end = 15.dp)) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 15.dp, vertical = 5.dp)
+            .padding(top = 10.dp)
+            .height(32.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(text = "运行日志")
         Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = onDismissRequest, modifier = Modifier.size(18.dp)) {
+        IconButton(onClick = onDismissRequest, modifier = Modifier.size(32.dp)) {
             Icon(
                 imageVector = Icons.Rounded.Close,
                 contentDescription = "",
